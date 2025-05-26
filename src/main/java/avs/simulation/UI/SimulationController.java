@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.layout.BorderPane;
 import javafx.util.Duration;
 
 import java.net.URL;
@@ -16,7 +17,7 @@ import java.util.ResourceBundle;
 
 public class SimulationController implements Initializable {
     
-    @FXML private IntersectionView intersectionView;
+    @FXML private BorderPane simulationContainer;
     @FXML private Button addNorthButton;
     @FXML private Button addEastButton;
     @FXML private Button addSouthButton;
@@ -25,6 +26,7 @@ public class SimulationController implements Initializable {
     @FXML private Button playPauseButton;
     @FXML private Button clearButton;
     
+    private IntersectionView intersectionView;
     private Simulation simulation;
     private Timeline timeline;
     private boolean isRunning = false;
@@ -32,20 +34,24 @@ public class SimulationController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Create the IntersectionView programmatically
+        intersectionView = new IntersectionView(400, 400);
+        simulationContainer.setCenter(intersectionView);
+        
         // Create simulation
         simulation = new Simulation();
         simulation.setVisualMode(true);
         
-        // Set up simulation listener for visualization updates
-        simulation.addSimulationListener(simulationState -> {
-            Platform.runLater(() -> intersectionView.update(simulationState));
-        });
-        
-        // Setup the simulation timeline
+        // Set up the timeline for automated simulation
         timeline = new Timeline(new KeyFrame(Duration.seconds(TIMESTEP), e -> {
             simulation.performSimulationStep();
         }));
         timeline.setCycleCount(Animation.INDEFINITE);
+        
+        // Register simulation listener for visualization updates
+        simulation.addSimulationListener(simulationState -> {
+            Platform.runLater(() -> intersectionView.update(simulationState));
+        });
         
         // Initial update
         intersectionView.update(simulation.getCurrentState());
@@ -91,38 +97,29 @@ public class SimulationController implements Initializable {
     
     @FXML
     private void clearSimulation() {
-        // Stop simulation if running
         if (isRunning) {
             timeline.stop();
             isRunning = false;
             playPauseButton.setText("Play");
         }
         
-        // Reset simulation
         simulation = new Simulation();
         simulation.setVisualMode(true);
-        
-        // Re-register listener
         simulation.addSimulationListener(simulationState -> {
             Platform.runLater(() -> intersectionView.update(simulationState));
         });
-        
-        // Update view
         intersectionView.update(simulation.getCurrentState());
     }
     
     private void addRandomVehicle(TrafficLight.Direction startDirection) {
-        // Get random end direction that makes sense
         TrafficLight.Direction[] directions = TrafficLight.Direction.values();
         TrafficLight.Direction endDirection;
+        
         do {
             endDirection = directions[(int)(Math.random() * directions.length)];
-        } while (endDirection == startDirection); // Don't go back in the same direction
+        } while (endDirection == startDirection);
         
-        // Generate random vehicle ID
         String vehicleId = "V" + (int)(Math.random() * 1000);
-        
-        // Add to simulation
         simulation.addVehicle(vehicleId, startDirection, endDirection);
     }
 }

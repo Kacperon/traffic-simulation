@@ -4,6 +4,8 @@ import avs.simulation.*;
 import avs.simulation.model.TrafficLight;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -14,6 +16,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 
+import java.net.URL;
+
 public class SimulationVisualizer extends Application {
     private Simulation simulation;
     private IntersectionView intersectionView;
@@ -22,7 +26,44 @@ public class SimulationVisualizer extends Application {
     private final static float TIMESTEP = 0.7f;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws Exception {
+        try {
+            // Ensure the FXML file can be found
+            URL fxmlUrl = getClass().getResource("/fxml/SimulationView.fxml");
+            if (fxmlUrl == null) {
+                System.err.println("Cannot find FXML file at: /fxml/SimulationView.fxml");
+                // Fall back to non-FXML UI if needed
+                createSimpleUI(primaryStage);
+                return;
+            }
+
+            // Load FXML
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            Parent root = loader.load();
+
+            // Set up scene
+            Scene scene = new Scene(root, 800, 500);
+
+            // Add CSS if available
+            URL cssUrl = getClass().getResource("/css/simulation-styles.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            // Configure and show stage
+            primaryStage.setTitle("Traffic Simulation");
+            primaryStage.setScene(scene);
+            primaryStage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Fall back to non-FXML UI if FXML loading fails
+            createSimpleUI(primaryStage);
+        }
+    }
+
+    // Fallback method to create UI programmatically if FXML loading fails
+    private void createSimpleUI(Stage primaryStage) {
         // Create simulation
         simulation = new Simulation();
         simulation.setVisualMode(true);
