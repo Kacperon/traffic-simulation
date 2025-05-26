@@ -15,7 +15,7 @@ import javafx.util.Duration;
 
 public class SimulationVisualizer extends Application {
     private Simulation simulation;
-    private avs.visualization.IntersectionView intersectionView;
+    private avs.simulation.IntersectionView intersectionView;
     private Timeline timeline;
     private boolean isRunning = false;
 
@@ -27,7 +27,7 @@ public class SimulationVisualizer extends Application {
 
         // Create visual components
         BorderPane root = new BorderPane();
-        intersectionView = new avs.visualization.IntersectionView(400, 400);
+        intersectionView = new avs.simulation.IntersectionView(400, 400);
 
         // Create controls
         HBox controls = new HBox(10);

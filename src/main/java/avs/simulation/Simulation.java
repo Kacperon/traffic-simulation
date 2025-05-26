@@ -3,6 +3,8 @@ package avs.simulation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +22,13 @@ public class Simulation {
     private List<Consumer<SimulationState>> simulationListeners = new CopyOnWriteArrayList<>();
     private SimulationState currentState = new SimulationState();
 
+    private AnimationTimer timer;
+    private boolean running = false;
+    private long lastUpdate = 0;
+    private long updateInterval = 500_000_000; // 0.5 sekundy w nanosekundach
+
+    private SimulationController controller;
+
     public Simulation() {
         this.intersection = new Intersection();
         this.vehicleQueues = new HashMap<>();
@@ -30,6 +39,20 @@ public class Simulation {
         for (TrafficLight.Direction direction : TrafficLight.Direction.values()) {
             vehicleQueues.put(direction, new LinkedList<>());
         }
+
+        // Inicjalizacja stanu
+        currentState = new SimulationState();
+
+        // Inicjalizacja timera do aktualizacji symulacji
+        timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if (lastUpdate == 0 || (now - lastUpdate) >= updateInterval) {
+                    update();
+                    lastUpdate = now;
+                }
+            }
+        };
     }
 
     public void runFromJsonFile(String inputFile, String outputFile) throws IOException {
@@ -127,7 +150,11 @@ public class Simulation {
             for (int i = 0; i < vehiclesToProcess; i++) {
                 if (!queue.isEmpty()) {
                     Vehicle vehicle = queue.poll();
-                    vehicle.completeCrossing();
+                    
+                    // Zmień stan pojazdu na "przejeżdżający"
+                    vehicle.startCrossing();
+                    
+                    // Dodaj do listy ukończonych dopiero po animacji
                     completedVehicles.add(vehicle);
                     stepStatus.addLeftVehicle(vehicle.getVehicleId());
                 }
@@ -252,8 +279,42 @@ public class Simulation {
         }
 
         // Update crossed vehicles
-        if (stepStatus != null) {
-            currentState.setLastCrossedVehicles(stepStatus.getLeftVehicles());
+        if (stepStatus != null && !stepStatus.getLeftVehicles().isEmpty()) {
+            List<String> crossedVehicles = new ArrayList<>(stepStatus.getLeftVehicles());
+            
+            // Filtruj, aby dodać tylko pojazdy, które nie są już w animacji
+            List<String> newCrossedVehicles = new ArrayList<>();
+            for (String vehicleId : crossedVehicles) {
+                // Sprawdź, czy ten pojazd nie jest już animowany
+                boolean alreadyAnimated = false;
+                for (SimulationState.CrossingVehicle v : currentState.getCrossingVehicles()) {
+                    if (v.getId().equals(vehicleId)) {
+                        alreadyAnimated = true;
+                        break;
+                    }
+                }
+                
+                if (!alreadyAnimated) {
+                    newCrossedVehicles.add(vehicleId);
+                }
+            }
+            
+            // Ustaw listę pojazdów, które właśnie przejechały (dla potrzeb wyświetlania)
+            currentState.setLastCrossedVehicles(newCrossedVehicles);
+            
+            // Dodaj tylko nowe pojazdy do animacji
+            for (String vehicleId : newCrossedVehicles) {
+                // Znajdź pojazd, aby określić kierunki
+                for (Vehicle v : completedVehicles) {
+                    if (v.getVehicleId().equals(vehicleId)) {
+                        // Dodaj pojazd do animowanych pojazdów
+                        currentState.addCrossingVehicle(vehicleId, 
+                                                    v.getStartRoad(), 
+                                                    v.getEndRoad());
+                        break;
+                    }
+                }
+            }
         } else {
             currentState.setLastCrossedVehicles(new ArrayList<>());
         }
@@ -263,4 +324,76 @@ public class Simulation {
             listener.accept(currentState);
         }
     }
+
+    public void setController(SimulationController controller) {
+        this.controller = controller;
+    }
+
+    /**
+     * Rozpoczyna symulację
+     */
+    public void start() {
+        if (!running) {
+            running = true;
+            timer.start();
+        }
+    }
+
+    /**
+     * Pauzuje symulację
+     */
+    public void pause() {
+        if (running) {
+            running = false;
+            timer.stop();
+        }
+    }
+
+    /**
+     * Resetuje symulację do stanu początkowego
+     */
+    public void reset() {
+        pause();
+        currentState = new SimulationState();
+
+        // Powiadomienie kontrolera o zresetowanym stanie
+        if (controller != null) {
+            Platform.runLater(() -> controller.updateUI(currentState));
+        }
+    }
+
+    /**
+     * Aktualizuje stan symulacji o jeden krok
+     */
+    private void update() {
+        // Aktualizuj animację pojazdów przejeżdżających przez skrzyżowanie
+        // tylko jeśli są jakieś pojazdy do animacji
+        if (!currentState.getCrossingVehicles().isEmpty()) {
+            currentState.updateCrossingAnimations();
+        }
+
+        // Powiadom kontroler o nowym stanie
+        if (controller != null) {
+            Platform.runLater(() -> controller.updateUI(currentState));
+        }
+    }
+
+    /**
+     * Zwraca aktualny stan symulacji
+     */
+    public SimulationState getState() {
+        return currentState;
+    }
+
+    /**
+     * Ustawia interwał aktualizacji symulacji w milisekundach
+     */
+    public void setUpdateInterval(int milliseconds) {
+        this.updateInterval = milliseconds * 1_000_000L;
+    }
+
+    /**
+     * Rysuje pojazdy w kolejce dla danego kierunku
+     */
+
 }
