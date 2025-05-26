@@ -1,4 +1,4 @@
-package avs.simulation;
+package avs.simulation.model;
 
 import java.util.ArrayList;
 import java.util.List;

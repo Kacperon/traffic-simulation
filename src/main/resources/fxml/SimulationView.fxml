@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Separator?>
+<?import avs.simulation.UI.IntersectionView?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+        fx:controller="avs.simulation.UI.SimulationController"
+        stylesheets="@../css/simulation-styles.css">
+    
+    <bottom>
+        <HBox alignment="CENTER" spacing="10" styleClass="control-panel">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <Button fx:id="addNorthButton" text="Add North" styleClass="direction-button, north-button" onAction="#addNorthVehicle" />
+            <Button fx:id="addEastButton" text="Add East" styleClass="direction-button, east-button" onAction="#addEastVehicle" />
+            <Button fx:id="addSouthButton" text="Add South" styleClass="direction-button, south-button" onAction="#addSouthVehicle" />
+            <Button fx:id="addWestButton" text="Add West" styleClass="direction-button, west-button" onAction="#addWestVehicle" />
+            
+            <Separator orientation="VERTICAL" />
+            
+            <Button fx:id="stepButton" text="Step" styleClass="control-button" onAction="#step" />
+            <Button fx:id="playPauseButton" text="Play/Pause" styleClass="control-button, play-button" onAction="#toggleSimulation" />
+            
+            <Separator orientation="VERTICAL" />
+            
+            <Button fx:id="clearButton" text="Clear" styleClass="control-button, clear-button" onAction="#clearSimulation" />
+        </HBox>
+    </bottom>
+</BorderPane>

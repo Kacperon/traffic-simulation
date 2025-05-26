@@ -1,4 +1,6 @@
-package avs.simulation;
+package avs.simulation.util;
+
+import avs.simulation.model.TrafficLight;
 
 public class Command {
     public enum CommandType {
@@ -11,7 +13,6 @@ public class Command {
     private TrafficLight.Direction startRoad;
     private TrafficLight.Direction endRoad;
 
-    // Konstruktor dla komendy ADD_VEHICLE
     public Command(CommandType type, String vehicleId, TrafficLight.Direction startRoad, TrafficLight.Direction endRoad) {
         this.type = type;
         this.vehicleId = vehicleId;
@@ -19,7 +20,6 @@ public class Command {
         this.endRoad = endRoad;
     }
 
-    // Konstruktor dla komendy STEP
     public Command(CommandType type) {
         this.type = type;
     }

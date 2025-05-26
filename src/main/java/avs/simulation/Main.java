@@ -1,8 +1,7 @@
 package avs.simulation;
 
-import java.io.File;
 import java.io.IOException;
-import avs.visualization.SimulationVisualizer;
+import avs.simulation.UI.SimulationVisualizer;
 
 public class Main {
     public static void main(String[] args) {
@@ -42,6 +41,6 @@ public class Main {
         System.out.println("Usage:");
         System.out.println("  java -jar simulation.jar                    (for visual mode)");
         System.out.println("  java -jar simulation.jar --visual           (for visual mode)");
-        System.out.println("  java -jar simulation.jar input.json output.json   (for console mode)");
+        System.out.println("  java -jar simulation.jar <input.json> <output.json>   (for console mode)");
     }
 }

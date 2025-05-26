@@ -1,4 +1,4 @@
-package avs.simulation;
+package avs.simulation.model;
 
 public class TrafficLight {
     public enum Direction {

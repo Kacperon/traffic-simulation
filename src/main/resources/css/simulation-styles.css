@@ -1,0 +1,88 @@
+/* Root application styles */
+.root {
+    -fx-background-color: #f4f4f4;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Control panel at the bottom */
+.control-panel {
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #c0c0c0;
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 10px;
+}
+
+/* Button base styles */
+.button {
+    -fx-background-radius: 5;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8px 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);
+}
+
+.button:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 2);
+}
+
+.button:pressed {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 2, 0, 0, 0);
+    -fx-translate-y: 1px;
+}
+
+/* Direction buttons */
+.direction-button {
+    -fx-font-size: 12px;
+    -fx-min-width: 90px;
+}
+
+.north-button {
+    -fx-background-color: linear-gradient(to bottom, #ff6b6b, #ee5253);
+    -fx-text-fill: white;
+}
+
+.east-button {
+    -fx-background-color: linear-gradient(to bottom, #48dbfb, #0abde3);
+    -fx-text-fill: white;
+}
+
+.south-button {
+    -fx-background-color: linear-gradient(to bottom, #1dd1a1, #10ac84);
+    -fx-text-fill: white;
+}
+
+.west-button {
+    -fx-background-color: linear-gradient(to bottom, #feca57, #ff9f43);
+    -fx-text-fill: white;
+}
+
+/* Control buttons */
+.control-button {
+    -fx-font-size: 13px;
+    -fx-background-color: linear-gradient(to bottom, #a5b1c2, #8395a7);
+    -fx-text-fill: white;
+    -fx-min-width: 100px;
+}
+
+.play-button {
+    -fx-background-color: linear-gradient(to bottom, #54a0ff, #2e86de);
+}
+
+.clear-button {
+    -fx-background-color: linear-gradient(to bottom, #ff7f50, #ff6348);
+}
+
+/* Separator styling */
+.separator:vertical .line {
+    -fx-border-color: #c0c0c0;
+    -fx-border-width: 0 0 0 1;
+}
+
+/* IntersectionView styling */
+.intersection-view {
+    -fx-background-color: white;
+    -fx-border-color: #dcdde1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);
+}

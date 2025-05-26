@@ -1,4 +1,7 @@
-package avs.simulation;
+package avs.simulation.UI;
+
+import avs.simulation.model.TrafficLight;
+import avs.simulation.model.Vehicle;
 
 import java.util.*;
 
@@ -154,14 +157,5 @@ public class SimulationState {
                 default: return Vehicle.MovementType.STRAIGHT;
             }
         }
-    }
-
-    // Add this method to SimulationState
-    public List<String> getVehicleQueueIds(TrafficLight.Direction direction) {
-        List<String> ids = new ArrayList<>();
-        for (QueuedVehicle v : getVehicleQueue(direction)) {
-            ids.add(v.getId());
-        }
-        return ids;
     }
 }

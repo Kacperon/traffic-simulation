@@ -1,6 +1,7 @@
-package avs.visualization;
+package avs.simulation.UI;
 
 import avs.simulation.*;
+import avs.simulation.model.TrafficLight;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -15,9 +16,10 @@ import javafx.util.Duration;
 
 public class SimulationVisualizer extends Application {
     private Simulation simulation;
-    private avs.simulation.IntersectionView intersectionView;
+    private IntersectionView intersectionView;
     private Timeline timeline;
     private boolean isRunning = false;
+    private final static float TIMESTEP = 0.7f;
 
     @Override
     public void start(Stage primaryStage) {
@@ -27,7 +29,7 @@ public class SimulationVisualizer extends Application {
 
         // Create visual components
         BorderPane root = new BorderPane();
-        intersectionView = new avs.simulation.IntersectionView(400, 400);
+        intersectionView = new IntersectionView(400, 400);
 
         // Create controls
         HBox controls = new HBox(10);
@@ -42,7 +44,6 @@ public class SimulationVisualizer extends Application {
                 addSouthButton, addWestButton,
                 stepButton, playButton);
 
-        // Set actions
         addNorthButton.setOnAction(e -> addRandomVehicle(TrafficLight.Direction.NORTH));
         addEastButton.setOnAction(e -> addRandomVehicle(TrafficLight.Direction.EAST));
         addSouthButton.setOnAction(e -> addRandomVehicle(TrafficLight.Direction.SOUTH));
@@ -50,12 +51,10 @@ public class SimulationVisualizer extends Application {
         stepButton.setOnAction(e -> simulation.performSimulationStep());
         playButton.setOnAction(e -> toggleSimulation());
 
-        // Layout
         root.setCenter(intersectionView);
         root.setBottom(controls);
 
-        // Create animation timeline
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+        timeline = new Timeline(new KeyFrame(Duration.seconds(TIMESTEP), e -> {
             simulation.performSimulationStep();
         }));
         timeline.setCycleCount(Animation.INDEFINITE);
