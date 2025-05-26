@@ -1,10 +1,9 @@
 package avs.simulation;
 
-import avs.simulation.*;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -24,6 +23,7 @@ public class IntersectionView extends Canvas {
     // Dodaj te pola do klasy IntersectionView
     private Map<String, AnimatedVehicle> activeAnimatedVehicles = new HashMap<>();
     private AnimationTimer animationTimer;
+    private Simulation simulation; // Dodane pole klasy
 
     public IntersectionView(double width, double height) {
         super(width, height);
@@ -47,27 +47,13 @@ public class IntersectionView extends Canvas {
     public void update(SimulationState state) {
         this.currentState = state;
         
+        // Nie ma potrzeby oddzielnego wywołania redrawCanvas(), 
+        // animationTimer zrobi to automatycznie w następnej klatce
+        
         // Wyczyść mapę aktywnych animacji dla nowych pojazdów
         clearCompletedAnimations();
         
         // Dodaj nowe pojazdy do animacji
-        updateAnimatedVehicles();
-        
-        // Przerysuj canvas
-        redrawCanvas();
-    }
-
-    private void draw() {
-        // Ta metoda może być wywoływana rzadziej, tylko przy inicjalizacji
-        // lub zmianie wielkości okna
-        double width = getWidth();
-        double height = getHeight();
-        
-        drawBackground(width, height);
-        drawTrafficLights(width, height);
-        drawVehicleQueues(width, height);
-        
-        // Aktualizacja animowanych pojazdów
         updateAnimatedVehicles();
     }
 
@@ -228,18 +214,16 @@ public class IntersectionView extends Canvas {
                 case 1: return Vehicle.MovementType.LEFT;
                 case 2: return Vehicle.MovementType.STRAIGHT;
                 case 3: return Vehicle.MovementType.RIGHT;
-                default: return Vehicle.MovementType.STRAIGHT; // Domyślnie
+                default: return Vehicle.MovementType.STRAIGHT;
             }
         }
         
         public void setInitialPositionAndRotation() {
-            // Ustaw początkową rotację zgodnie z ruchem wskazówek zegara
-            // 0 stopni - w prawo, 90 - w dół, 180 - w lewo, 270 - w górę
             switch(fromDirection) {
-                case NORTH: rotation.set(90); break;   // Patrzy w dół
-                case EAST: rotation.set(180); break;   // Patrzy w lewo
-                case SOUTH: rotation.set(270); break;  // Patrzy w górę
-                case WEST: rotation.set(0); break;     // Patrzy w prawo
+                case NORTH: rotation.set(90); break;
+                case EAST: rotation.set(180); break;
+                case SOUTH: rotation.set(270); break;
+                case WEST: rotation.set(0); break;
             }
             
             // Pozycja początkowa na krawędzi skrzyżowania
@@ -266,28 +250,18 @@ public class IntersectionView extends Canvas {
         public void animate(double durationSeconds) {
             animation = new Timeline();
             
+            // Przygotuj animację w zależności od typu ruchu
             switch (movementType) {
-                case STRAIGHT:
-                    animateStraight(durationSeconds);
-                    break;
-                case LEFT:
-                    animateLeft(durationSeconds);
-                    break;
-                case RIGHT:
-                    animateRight(durationSeconds);
-                    break;
+                case STRAIGHT: animateStraight(durationSeconds); break;
+                case LEFT:     animateLeft(durationSeconds); break;
+                case RIGHT:    animateRight(durationSeconds); break;
             }
             
-            // Dodaj obsługę zakończenia animacji z usuwaniem z obu kolekcji
+            // Dodaj obsługę zakończenia animacji
             animation.setOnFinished(event -> {
-                // Usunięcie pojazdu z aktywnych animacji po zakończeniu
+                // Wystarczy usunąć z aktywnych animacji, clearCompletedAnimations zajmie się resztą
                 activeAnimatedVehicles.remove(id);
-                
-                // Dodatkowo powiadom symulację o zakończeniu animacji dla tego pojazdu
-                if (currentState != null) {
-                    currentState.removeVehicleFromAnimation(id);
-                }
-                
+                currentState.removeVehicleFromAnimation(id);
                 System.out.println("Animacja zakończona - usunięto pojazd: " + id);
             });
             
@@ -315,35 +289,35 @@ public class IntersectionView extends Canvas {
             
             animation.getKeyFrames().add(keyFrame);
         }
-        
+
         private void animateLeft(double durationSeconds) {
             // Animacja skrętu w lewo (szeroki łuk)
             double midX = x.get(), midY = y.get();
             double endX = x.get(), endY = y.get();
-            
+
             // ZMIANA: odwrócenie kierunku rotacji dla skrętu w lewo
             double finalRotation = rotation.get() + 90;  // Zmienione z -90 na +90
-            
+
             // Określenie punktów pośrednich i końcowych
             switch(fromDirection) {
                 case NORTH:  // Z północy w kierunku zachodnim
-                    midX = 0.45; midY = 0.5;
-                    endX = 0.2; endY = 0.55;
+                    midX = 0.45; midY = 0.45;
+                    endX = 0.2; endY = 0.45;
                     break;
                 case EAST:  // Ze wschodu w kierunku północnym
-                    midX = 0.5; midY = 0.45;
-                    endX = 0.45; endY = 0.2;
+                    midX = 0.55; midY = 0.45;
+                    endX = 0.55; endY = 0.2;
                     break;
                 case SOUTH:  // Z południa w kierunku wschodnim
-                    midX = 0.55; midY = 0.5;
-                    endX = 0.8; endY = 0.45;
+                    midX = 0.55; midY = 0.55;
+                    endX = 0.8; endY = 0.55;
                     break;
                 case WEST:  // Z zachodu w kierunku południowym
-                    midX = 0.5; midY = 0.55;
-                    endX = 0.55; endY = 0.8;
+                    midX = 0.45; midY = 0.55;
+                    endX = 0.45; endY = 0.8;
                     break;
             }
-            
+
             // Pierwszy krok - przejazd na środek
             KeyFrame keyFrame1 = new KeyFrame(
                 Duration.seconds(durationSeconds * 0.3),
@@ -373,20 +347,20 @@ public class IntersectionView extends Canvas {
             // Określenie punktów pośrednich i końcowych
             switch(fromDirection) {
                 case NORTH:  // Z północy w kierunku wschodnim
-                    midX = 0.5; midY = 0.45;
-                    endX = 0.8; endY = 0.45;
+                    midX = 0.5; midY = 0.55;
+                    endX = 0.8; endY = 0.55;
                     break;
                 case EAST:  // Ze wschodu w kierunku południowym
-                    midX = 0.55; midY = 0.5;
-                    endX = 0.55; endY = 0.8;
+                    midX = 0.45; midY = 0.5;
+                    endX = 0.45; endY = 0.8;
                     break;
                 case SOUTH:  // Z południa w kierunku zachodnim
-                    midX = 0.5; midY = 0.55;
-                    endX = 0.2; endY = 0.55;
+                    midX = 0.5; midY = 0.45;
+                    endX = 0.2; endY = 0.45;
                     break;
                 case WEST:  // Z zachodu w kierunku północnym
-                    midX = 0.45; midY = 0.5;
-                    endX = 0.45; endY = 0.2;
+                    midX = 0.55; midY = 0.5;
+                    endX = 0.55; endY = 0.2;
                     break;
             }
             
@@ -421,121 +395,30 @@ public class IntersectionView extends Canvas {
         }
     }
 
-    // Dodaj nową klasę wewnętrzną
-    private static class CrossingVehicle {
-        String id;
-        TrafficLight.Direction fromDirection;
-        TrafficLight.Direction toDirection;
-        int animationStep; // 0 = centrum, 1-2 = droga docelowa
-        
-        public CrossingVehicle(String id, TrafficLight.Direction fromDirection, 
-                               TrafficLight.Direction toDirection, int animationStep) {
-            this.id = id;
-            this.fromDirection = fromDirection;
-            this.toDirection = toDirection;
-            this.animationStep = animationStep;
-        }
-    }
-    
-    // Zastąp istniejącą metodę drawCrossingVehicles() tą ulepszoną wersją
-    private void drawCrossingVehicles() {
-        List<SimulationState.CrossingVehicle> crossingVehicles = currentState.getCrossingVehicles();
-        
-        // Twórz nowe animacje tylko dla nowych pojazdów
-        if (crossingVehicles != null) {
-            for (SimulationState.CrossingVehicle vehicle : crossingVehicles) {
-                String vehicleId = vehicle.getId();
-                
-                // Jeśli pojazd nie jest jeszcze animowany, dodaj go
-                if (!activeAnimatedVehicles.containsKey(vehicleId)) {
-                    AnimatedVehicle animVehicle = new AnimatedVehicle(
-                        vehicleId, 
-                        vehicle.getFromDirection(),
-                        vehicle.getToDirection()
-                    );
-                    
-                    // Rozpocznij animację
-                    animVehicle.animate(2.0); // 2 sekundy na całą animację
-                    
-                    // Po zakończeniu animacji usuń pojazd z aktywnych animacji
-                    animVehicle.animation.setOnFinished(event -> {
-                        activeAnimatedVehicles.remove(vehicleId);
-                    });
-                    
-                    // Dodaj do mapy aktywnych animacji
-                    activeAnimatedVehicles.put(vehicleId, animVehicle);
-                }
-            }
-        }
-        
-        // Rysuj wszystkie aktywne animowane pojazdy
-        for (AnimatedVehicle vehicle : activeAnimatedVehicles.values()) {
-            drawAnimatedVehicle(
-                vehicle.id, 
-                vehicle.getDrawX(), 
-                vehicle.getDrawY(),
-                vehicle.getRotation(),
-                vehicle.movementType
-            );
-        }
-    }
-    
-    // Nowa metoda do rysowania pojazdów z rotacją
-    private void drawAnimatedVehicle(String id, double x, double y, double rotation, Vehicle.MovementType type) {
-        gc.save();  // Zapisz stan obecny
-        
-        // Przesuń i obróć
-        gc.translate(x, y);
-        gc.rotate(rotation);
-        
-        // Wybierz kolor zależnie od typu ruchu
-        Color vehicleColor;
-        switch (type) {
-            case LEFT: vehicleColor = Color.ORANGE; break;
-            case RIGHT: vehicleColor = Color.CYAN; break;
-            default: vehicleColor = Color.LIME; break;
-        }
-        
-        // Narysuj pojazd jako prostokąt z "nosem"
-        gc.setFill(vehicleColor);
-        gc.fillRect(-10, -6, 20, 12);
-        
-        double[] triangleX = {10, 15, 10};
-        double[] triangleY = {-6, 0, 6};
-        gc.fillPolygon(triangleX, triangleY, 3);
-        
-        // Tekst z ID pojazdu
-        gc.setFill(Color.BLACK);
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.fillText(id, 0, 3);
-        
-        gc.restore();  // Przywróć stan
-    }
-    
-    // Metoda do aktualizacji animowanych pojazdów
+    /**
+     * Aktualizuje animowane pojazdy na podstawie stanu symulacji
+     */
     private void updateAnimatedVehicles() {
-        // Pobierz pojazdy przecinające skrzyżowanie
         List<SimulationState.CrossingVehicle> crossingVehicles = currentState.getCrossingVehicles();
+        if (crossingVehicles == null || crossingVehicles.isEmpty()) return;
         
-        // Sprawdzamy, czy są nowe pojazdy do animacji
-        if (crossingVehicles != null) {
-            for (SimulationState.CrossingVehicle vehicle : crossingVehicles) {
-                String vehicleId = vehicle.getId();
+        // Twórz animacje tylko dla nowych pojazdów
+        for (SimulationState.CrossingVehicle vehicle : crossingVehicles) {
+            String vehicleId = vehicle.getId();
+            
+            // Jeśli pojazd nie jest jeszcze animowany, dodaj go
+            if (!activeAnimatedVehicles.containsKey(vehicleId)) {
+                AnimatedVehicle animVehicle = new AnimatedVehicle(
+                    vehicleId, 
+                    vehicle.getFromDirection(),
+                    vehicle.getToDirection()
+                );
                 
-                // Jeśli pojazd nie jest jeszcze animowany, dodaj go
-                if (!activeAnimatedVehicles.containsKey(vehicleId)) {
-                    AnimatedVehicle animVehicle = new AnimatedVehicle(
-                        vehicleId, 
-                        vehicle.getFromDirection(),
-                        vehicle.getToDirection()
-                    );
-                    
-                    // Rozpocznij animację z odpowiednim czasem trwania
-                    animVehicle.animate(1.5); // 1.5 sekundy na całą animację
-                    
-                    // Dodaj do mapy aktywnych animacji
-                    activeAnimatedVehicles.put(vehicleId, animVehicle);
-                }
+                // Rozpocznij animację z odpowiednim czasem trwania
+                animVehicle.animate(1.5); // 1.5 sekundy na całą animację
+                
+                // Dodaj do mapy aktywnych animacji
+                activeAnimatedVehicles.put(vehicleId, animVehicle);
             }
         }
     }
@@ -626,5 +509,47 @@ public class IntersectionView extends Canvas {
             }
             System.out.println("Usunięto animację pojazdu: " + vehicleId);
         }
+    }
+
+    /**
+     * Ustawia referencję do obiektu symulacji
+     */
+    public void setSimulation(Simulation simulation) {
+        this.simulation = simulation;
+    }
+
+    /**
+     * Rysuje animowany pojazd z określoną pozycją, rotacją i typem ruchu
+     */
+    private void drawAnimatedVehicle(String id, double x, double y, double rotation, Vehicle.MovementType type) {
+        gc.save();  // Zapisz stan obecny
+        
+        // Przesuń i obróć
+        gc.translate(x, y);
+        gc.rotate(rotation);
+        
+        // Wybierz kolor zależnie od typu ruchu
+        Color vehicleColor;
+        switch (type) {
+            case LEFT: vehicleColor = Color.ORANGE; break;
+            case RIGHT: vehicleColor = Color.CYAN; break;
+            default: vehicleColor = Color.LIME; break; // STRAIGHT
+        }
+        
+        // Narysuj pojazd jako prostokąt z "nosem"
+        gc.setFill(vehicleColor);
+        gc.fillRect(-10, -6, 20, 12);
+        
+        // Trójkąt wskazujący kierunek
+        double[] triangleX = {10, 15, 10};
+        double[] triangleY = {-6, 0, 6};
+        gc.fillPolygon(triangleX, triangleY, 3);
+        
+        // Tekst z ID pojazdu
+        gc.setFill(Color.BLACK);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.fillText(id, 0, 3);
+        
+        gc.restore();  // Przywróć stan
     }
 }

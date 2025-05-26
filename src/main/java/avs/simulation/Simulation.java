@@ -144,8 +144,8 @@ public class Simulation {
         for (TrafficLight.Direction greenDirection : greenDirections) {
             Queue<Vehicle> queue = vehicleQueues.get(greenDirection);
 
-            // W każdym kroku przepuszczamy określoną liczbę pojazdów
-            int vehiclesToProcess = Math.min(queue.size(), 2); // max 2 pojazdy na krok
+            // ZMIANA: Zmieniamy limit z 2 na 1 pojazd na krok 
+            int vehiclesToProcess = Math.min(queue.size(), 1); // max 1 pojazd na krok (było 2)
 
             for (int i = 0; i < vehiclesToProcess; i++) {
                 if (!queue.isEmpty()) {
