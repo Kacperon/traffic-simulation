@@ -1,4 +1,4 @@
-package avs.visualization;
+package avs.simulation;
 
 import avs.simulation.*;
 import javafx.scene.canvas.Canvas;
@@ -57,24 +57,24 @@ public class IntersectionView extends Canvas {
         gc.setFill(Color.LIGHTGRAY);
         gc.fillRect(width/2 - 30, height/2 - 30, 60, 60);
         
-        // Draw traffic lights - REPOSITIONED to the right side of each lane
-        // NORTH direction (approaching from top) - light on the right side (east)
-        drawTrafficLight(TrafficLight.Direction.NORTH, width/2 + 35, height/2 - 65, 0);
+        // Draw traffic lights - REPOSITIONED to the left side of each lane (for right-hand traffic)
+        // NORTH direction (approaching from top) - light on the left side (west)
+        drawTrafficLight(TrafficLight.Direction.NORTH, width/2 - 35, height/2 - 65, 0);
         
-        // EAST direction (approaching from right) - light on the right side (south)
-        drawTrafficLight(TrafficLight.Direction.EAST, width/2 + 65, height/2 + 35, 90);
+        // EAST direction (approaching from right) - light on the left side (north)
+        drawTrafficLight(TrafficLight.Direction.EAST, width/2 + 65, height/2 - 35, 90);
         
-        // SOUTH direction (approaching from bottom) - light on the right side (west)
-        drawTrafficLight(TrafficLight.Direction.SOUTH, width/2 - 35, height/2 + 65, 180);
+        // SOUTH direction (approaching from bottom) - light on the left side (east)
+        drawTrafficLight(TrafficLight.Direction.SOUTH, width/2 + 35, height/2 + 65, 180);
         
-        // WEST direction (approaching from left) - light on the right side (north)
-        drawTrafficLight(TrafficLight.Direction.WEST, width/2 - 65, height/2 - 35, 270);
+        // WEST direction (approaching from left) - light on the left side (south)
+        drawTrafficLight(TrafficLight.Direction.WEST, width/2 - 65, height/2 + 35, 270);
         
-        // Draw vehicles in queues
-        drawVehicleQueue(TrafficLight.Direction.NORTH, width/2 + 10, height/2 - 100);
-        drawVehicleQueue(TrafficLight.Direction.EAST, width/2 + 100, height/2 + 10);
-        drawVehicleQueue(TrafficLight.Direction.SOUTH, width/2 - 10, height/2 + 100);
-        drawVehicleQueue(TrafficLight.Direction.WEST, width/2 - 100, height/2 - 10);
+        // Draw vehicles in queues - adjusted for right-hand traffic
+        drawVehicleQueue(TrafficLight.Direction.NORTH, width/2 - 10, height/2 - 100);
+        drawVehicleQueue(TrafficLight.Direction.EAST, width/2 + 100, height/2 - 10);
+        drawVehicleQueue(TrafficLight.Direction.SOUTH, width/2 + 10, height/2 + 100);
+        drawVehicleQueue(TrafficLight.Direction.WEST, width/2 - 100, height/2 + 10);
 
         // Draw last vehicles that crossed the intersection
         drawCrossingVehicles();
