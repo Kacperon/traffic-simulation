@@ -50,8 +50,9 @@ public class Intersection {
 
     private class TrafficLightController {
         private static final int GREEN_DURATION = 2;
-        private static final int YELLOW_DURATION = 2;
-        private static final int RED_DURATION = 2;
+        private static final int YELLOW_DURATION = 1;
+        private static final int RED_DURATION = 1;
+        private static final int RED_YELLOW_DURATION = 2;
 
         private Map<TrafficLight.Direction, TrafficLight> lights;
         private TrafficLight.Direction currentGreenDirection;
@@ -64,9 +65,7 @@ public class Intersection {
 
             // zgodnie z testowym przypadkiem
             lights.get(TrafficLight.Direction.NORTH).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
-            lights.get(TrafficLight.Direction.SOUTH).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
-
-            // Ustaw pozostałe światła na czerwone
+            lights.get(TrafficLight.Direction.SOUTH).setState(TrafficLight.LightState.RED, RED_DURATION);
             lights.get(TrafficLight.Direction.EAST).setState(TrafficLight.LightState.RED, RED_DURATION);
             lights.get(TrafficLight.Direction.WEST).setState(TrafficLight.LightState.RED, RED_DURATION);
         }
@@ -87,26 +86,33 @@ public class Intersection {
                 case GREEN:
                     // Przejście z zielonego na żółte
                     currentLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
+                    
+                    // Jednocześnie przygotuj następny kierunek na przejście do zielonego
+                    TrafficLight.Direction nextDirection = getNextDirection();
+                    lights.get(nextDirection).setState(TrafficLight.LightState.RED_YELLOW, RED_YELLOW_DURATION);
                     break;
 
                 case YELLOW:
-                    // Przejście z żółtego na czerwone
+                    // Przejście z żółtego na czerwone dla bieżącego kierunku
                     currentLight.setState(TrafficLight.LightState.RED, RED_DURATION);
-                    break;
-
-                case RED:
-                    // Przejście z czerwonego na czerwono-żółte
-                    currentLight.setState(TrafficLight.LightState.RED_YELLOW, 1); // 1 sekunda dla czerwono-żółtego
+                    
+                    // Zmiana kierunku na następny który jest już w stanie RED_YELLOW
+                    switchToNextDirection();
                     break;
 
                 case RED_YELLOW:
-                    // Przejście z czerwono-żółtego na zielone i wybór następnego kierunku
-                    switchToNextDirection();
+                    // Przejście z czerwono-żółtego na zielone
+                    currentLight.setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
+                    break;
+
+                case RED:
+                    // Normalnie nic nie robimy, bo przejście do RED_YELLOW
+                    // jest obsługiwane podczas YELLOW innego kierunku
                     break;
             }
         }
 
-        private void switchToNextDirection() {
+        private TrafficLight.Direction getNextDirection() {
             // Cykliczne przechodzenie między kierunkami: N -> E -> S -> W -> N
             TrafficLight.Direction[] directions = {
                     TrafficLight.Direction.NORTH,
@@ -116,9 +122,13 @@ public class Intersection {
             };
 
             int currentIndex = Arrays.asList(directions).indexOf(currentGreenDirection);
-            currentGreenDirection = directions[(currentIndex + 1) % directions.length];
+            return directions[(currentIndex + 1) % directions.length];
+        }
 
-            lights.get(currentGreenDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
+        private void switchToNextDirection() {
+            // Zmiana bieżącego kierunku na następny
+            // (który powinien już być w stanie RED_YELLOW)
+            currentGreenDirection = getNextDirection();
         }
 
         public void adjustLightCycles(Map<TrafficLight.Direction, Queue<Vehicle>> vehicleQueues) {

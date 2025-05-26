@@ -7,12 +7,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 public class Simulation {
     private Intersection intersection;
     private Map<TrafficLight.Direction, Queue<Vehicle>> vehicleQueues;
     private List<Vehicle> completedVehicles;
     private List<StepStatus> stepStatuses;
+
+    private boolean visualMode = false;
+    private List<Consumer<SimulationState>> simulationListeners = new CopyOnWriteArrayList<>();
+    private SimulationState currentState = new SimulationState();
 
     public Simulation() {
         this.intersection = new Intersection();
@@ -84,12 +90,7 @@ public class Simulation {
         }
     }
 
-    private void addVehicle(String vehicleId, TrafficLight.Direction startRoad, TrafficLight.Direction endRoad) {
-        Vehicle vehicle = new Vehicle(vehicleId, startRoad, endRoad);
-        vehicleQueues.get(startRoad).add(vehicle);
-    }
-
-    private void performSimulationStep() {
+    public void performSimulationStep() {
         // Utworzenie nowego statusu kroku
         StepStatus stepStatus = new StepStatus();
 
@@ -104,6 +105,10 @@ public class Simulation {
 
         // Dodaj status kroku do listy
         stepStatuses.add(stepStatus);
+
+        if (visualMode) {
+            updateSimulationState(stepStatus);
+        }
 
         // Wizualizacja w terminalu
         visualizeIntersection(stepStatuses.size(), stepStatus);
@@ -139,41 +144,42 @@ public class Simulation {
     }
 
     private void visualizeIntersection(int stepNumber, StepStatus stepStatus) {
-        System.out.println("\n========== KROK SYMULACJI #" + stepNumber + " ==========");
+        System.out.println("\n========== SIMULATION STEP #" + stepNumber + " ==========");
 
-        // Informacje o światłach
-        System.out.println("\nSTAN ŚWIATEŁ:");
+        // Traffic light information
+        System.out.println("\nTRAFFIC LIGHT STATUS:");
         for (TrafficLight.Direction direction : TrafficLight.Direction.values()) {
             TrafficLight light = intersection.getTrafficLight(direction);
             String stateSymbol = "";
             switch (light.getCurrentState()) {
-                case RED: stateSymbol = "czerwone"; break;
-                case RED_YELLOW: stateSymbol = "czerwono-żółte"; break;
-                case YELLOW: stateSymbol = "żółte"; break;
-                case GREEN: stateSymbol = "zielone"; break;
+                case RED: stateSymbol = "red"; break;
+                case RED_YELLOW: stateSymbol = "red-yellow"; break;
+                case YELLOW: stateSymbol = "yellow"; break;
+                case GREEN: stateSymbol = "green"; break;
             }
-            System.out.printf("%-7s: %s (pozostały czas: %ds)\n",
+            System.out.printf("%-7s: %s (remaining time: %ds)\n",
                     direction, stateSymbol, light.getRemainingTime());
         }
 
-        // Informacje o kolejkach pojazdów
-        System.out.println("\nPOJAZDY W KOLEJKACH:");
+        // Vehicle queue information
+        System.out.println("\nVEHICLES IN QUEUES:");
         for (TrafficLight.Direction direction : TrafficLight.Direction.values()) {
             Queue<Vehicle> queue = vehicleQueues.get(direction);
-            System.out.printf("%-7s: %d pojazdów\n", direction, queue.size());
+            System.out.printf("%-7s: %d vehicles\n", direction, queue.size());
             if (!queue.isEmpty()) {
                 System.out.print("         [ ");
                 for (Vehicle v : queue) {
+                    // Display vehicle IDs
                     System.out.print(v.getVehicleId() + " ");
                 }
                 System.out.println("]");
             }
         }
 
-        // Informacje o pojazdach, które opuściły skrzyżowanie
-        System.out.println("\nPOJAZDY OPUSZCZAJĄCE SKRZYŻOWANIE W TYM KROKU:");
+        // Information about vehicles that left the intersection
+        System.out.println("\nVEHICLES LEAVING INTERSECTION THIS STEP:");
         if (stepStatus.getLeftVehicles().isEmpty()) {
-            System.out.println("Brak");
+            System.out.println("None");
         } else {
             System.out.print("[ ");
             for (String vehicleId : stepStatus.getLeftVehicles()) {
@@ -202,5 +208,59 @@ public class Simulation {
         }
 
         mapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputFile), rootNode);
+    }
+
+    public void setVisualMode(boolean visualMode) {
+        this.visualMode = visualMode;
+    }
+
+    public void addSimulationListener(Consumer<SimulationState> listener) {
+        simulationListeners.add(listener);
+    }
+
+    public void removeSimulationListener(Consumer<SimulationState> listener) {
+        simulationListeners.remove(listener);
+    }
+
+    public SimulationState getCurrentState() {
+        return currentState;
+    }
+
+    public void addVehicle(String vehicleId, TrafficLight.Direction startRoad, TrafficLight.Direction endRoad) {
+        Vehicle vehicle = new Vehicle(vehicleId, startRoad, endRoad);
+        vehicleQueues.get(startRoad).add(vehicle);
+
+        if (visualMode) {
+            updateSimulationState(null);
+        }
+    }
+
+    private void updateSimulationState(StepStatus stepStatus) {
+        // Update light states
+        for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
+            TrafficLight light = intersection.getTrafficLight(dir);
+            currentState.setLightState(dir, light.getCurrentState());
+        }
+
+        // Update vehicle queues
+        for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
+            List<String> vehicleIds = new ArrayList<>();
+            for (Vehicle v : vehicleQueues.get(dir)) {
+                vehicleIds.add(v.getVehicleId());
+            }
+            currentState.setVehicleQueue(dir, vehicleIds);
+        }
+
+        // Update crossed vehicles
+        if (stepStatus != null) {
+            currentState.setLastCrossedVehicles(stepStatus.getLeftVehicles());
+        } else {
+            currentState.setLastCrossedVehicles(new ArrayList<>());
+        }
+
+        // Notify listeners
+        for (Consumer<SimulationState> listener : simulationListeners) {
+            listener.accept(currentState);
+        }
     }
 }
