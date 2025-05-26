@@ -4,7 +4,7 @@ import java.util.*;
 
 public class SimulationState {
     private Map<TrafficLight.Direction, TrafficLight.LightState> lightStates;
-    private Map<TrafficLight.Direction, List<String>> vehicleQueues;
+    private Map<TrafficLight.Direction, List<QueuedVehicle>> vehicleQueues;
     private List<String> lastCrossedVehicles;
     private List<CrossingVehicle> crossingVehicles;
 
@@ -25,8 +25,8 @@ public class SimulationState {
         lightStates.put(direction, state);
     }
 
-    public void setVehicleQueue(TrafficLight.Direction direction, List<String> vehicles) {
-        vehicleQueues.put(direction, vehicles);
+    public void setVehicleQueue(TrafficLight.Direction direction, List<QueuedVehicle> vehicles) {
+        vehicleQueues.put(direction, new ArrayList<>(vehicles));
     }
 
     public void setLastCrossedVehicles(List<String> vehicles) {
@@ -37,8 +37,8 @@ public class SimulationState {
         return lightStates.get(direction);
     }
 
-    public List<String> getVehicleQueue(TrafficLight.Direction direction) {
-        return vehicleQueues.get(direction);
+    public List<QueuedVehicle> getVehicleQueue(TrafficLight.Direction direction) {
+        return vehicleQueues.getOrDefault(direction, new ArrayList<>());
     }
 
     public List<String> getLastCrossedVehicles() {
@@ -126,5 +126,42 @@ public class SimulationState {
         public void setAnimationStep(int animationStep) {
             this.animationStep = animationStep;
         }
+    }
+
+    // Add this new class to represent queued vehicles with their directions
+    public static class QueuedVehicle {
+        private String id;
+        private TrafficLight.Direction startRoad;
+        private TrafficLight.Direction endRoad;
+
+        public QueuedVehicle(String id, TrafficLight.Direction startRoad, TrafficLight.Direction endRoad) {
+            this.id = id;
+            this.startRoad = startRoad;
+            this.endRoad = endRoad;
+        }
+
+        public String getId() { return id; }
+        public TrafficLight.Direction getStartRoad() { return startRoad; }
+        public TrafficLight.Direction getEndRoad() { return endRoad; }
+
+        // Helper method to determine movement type
+        public Vehicle.MovementType getMovementType() {
+            int diff = (endRoad.ordinal() - startRoad.ordinal() + 4) % 4;
+            switch (diff) {
+                case 1: return Vehicle.MovementType.LEFT;
+                case 2: return Vehicle.MovementType.STRAIGHT;
+                case 3: return Vehicle.MovementType.RIGHT;
+                default: return Vehicle.MovementType.STRAIGHT;
+            }
+        }
+    }
+
+    // Add this method to SimulationState
+    public List<String> getVehicleQueueIds(TrafficLight.Direction direction) {
+        List<String> ids = new ArrayList<>();
+        for (QueuedVehicle v : getVehicleQueue(direction)) {
+            ids.add(v.getId());
+        }
+        return ids;
     }
 }

@@ -269,13 +269,15 @@ public class Simulation {
             currentState.setLightState(dir, light.getCurrentState());
         }
 
-        // Update vehicle queues
+        // Update vehicle queues with full vehicle information
         for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
-            List<String> vehicleIds = new ArrayList<>();
+            List<SimulationState.QueuedVehicle> vehicles = new ArrayList<>();
             for (Vehicle v : vehicleQueues.get(dir)) {
-                vehicleIds.add(v.getVehicleId());
+                // Store the complete vehicle information including start and end roads
+                vehicles.add(new SimulationState.QueuedVehicle(
+                    v.getVehicleId(), v.getStartRoad(), v.getEndRoad()));
             }
-            currentState.setVehicleQueue(dir, vehicleIds);
+            currentState.setVehicleQueue(dir, vehicles);
         }
 
         // Update crossed vehicles

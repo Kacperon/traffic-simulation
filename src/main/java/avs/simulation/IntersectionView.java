@@ -24,11 +24,17 @@ public class IntersectionView extends Canvas {
     private Map<String, AnimatedVehicle> activeAnimatedVehicles = new HashMap<>();
     private AnimationTimer animationTimer;
     private Simulation simulation; // Dodane pole klasy
+    private Map<TrafficLight.Direction, Queue<SimulationState.CrossingVehicle>> pendingVehicles = new HashMap<>();
 
     public IntersectionView(double width, double height) {
         super(width, height);
         gc = getGraphicsContext2D();
         currentState = new SimulationState();
+        
+        // Initialize queues for each direction
+        for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
+            pendingVehicles.put(dir, new LinkedList<>());
+        }
         
         // Inicjalizacja timera animacji
         animationTimer = new AnimationTimer() {
@@ -229,20 +235,20 @@ public class IntersectionView extends Canvas {
             // Pozycja początkowa na krawędzi skrzyżowania
             switch(fromDirection) {
                 case NORTH: 
-                    x.set(0.45);  // Lewy pas (ruch prawostronny)
-                    y.set(0.4); 
+                    x.set(0.47);  // Lewy pas (ruch prawostronny)
+                    y.set(0.4);
                     break;
                 case EAST: 
-                    x.set(0.6); 
-                    y.set(0.45);  // Górny pas
+                    x.set(0.6);
+                    y.set(0.47);  // Górny pas
                     break;
                 case SOUTH: 
-                    x.set(0.55);  // Prawy pas
-                    y.set(0.6); 
+                    x.set(0.53);  // Prawy pas
+                    y.set(0.6);
                     break;
                 case WEST: 
-                    x.set(0.4); 
-                    y.set(0.55);  // Dolny pas
+                    x.set(0.4);
+                    y.set(0.53);  // Dolny pas
                     break;
             }
         }
@@ -322,15 +328,16 @@ public class IntersectionView extends Canvas {
             KeyFrame keyFrame1 = new KeyFrame(
                 Duration.seconds(durationSeconds * 0.3),
                 new KeyValue(x, midX, new CircularInterpolator(CircularInterpolator.Direction.UP)),
-                new KeyValue(y, midY, new CircularInterpolator(CircularInterpolator.Direction.DOWN))
+                new KeyValue(y, midY, new CircularInterpolator(CircularInterpolator.Direction.DOWN)),
+                new KeyValue(rotation, finalRotation, Interpolator.EASE_BOTH)
             );
             
             // Drugi krok - skręt w lewo i wyjazd
             KeyFrame keyFrame2 = new KeyFrame(
                 Duration.seconds(durationSeconds),
                 new KeyValue(x, endX, new CircularInterpolator(CircularInterpolator.Direction.DOWN)),
-                new KeyValue(y, endY, new CircularInterpolator(CircularInterpolator.Direction.UP)),
-                new KeyValue(rotation, finalRotation, Interpolator.EASE_BOTH)
+                new KeyValue(y, endY, new CircularInterpolator(CircularInterpolator.Direction.UP))
+                
             );
             
             animation.getKeyFrames().addAll(keyFrame1, keyFrame2);
@@ -368,15 +375,16 @@ public class IntersectionView extends Canvas {
             KeyFrame keyFrame1 = new KeyFrame(
                 Duration.seconds(durationSeconds * 0.3),
                 new KeyValue(x, midX, new CircularInterpolator(CircularInterpolator.Direction.DOWN)),
-                new KeyValue(y, midY, new CircularInterpolator(CircularInterpolator.Direction.UP))
+                new KeyValue(y, midY, new CircularInterpolator(CircularInterpolator.Direction.UP)),
+                new KeyValue(rotation, finalRotation, Interpolator.EASE_BOTH)
             );
             
             // Drugi krok - skręt w prawo i wyjazd
             KeyFrame keyFrame2 = new KeyFrame(
                 Duration.seconds(durationSeconds),
                 new KeyValue(x, endX, new CircularInterpolator(CircularInterpolator.Direction.UP)),
-                new KeyValue(y, endY, new CircularInterpolator(CircularInterpolator.Direction.DOWN)),
-                new KeyValue(rotation, finalRotation, Interpolator.EASE_BOTH)
+                new KeyValue(y, endY, new CircularInterpolator(CircularInterpolator.Direction.DOWN))
+                
             );
             
             animation.getKeyFrames().addAll(keyFrame1, keyFrame2);
@@ -437,37 +445,65 @@ public class IntersectionView extends Canvas {
         }
     }
     private void drawVehicleQueue(TrafficLight.Direction direction, double startX, double startY) {
-        List<String> vehicles = currentState.getVehicleQueue(direction);
+        List<SimulationState.QueuedVehicle> vehicles = currentState.getVehicleQueue(direction);
         if (vehicles == null || vehicles.isEmpty()) return;
-
-        gc.setFill(Color.BLUE);
-        gc.setTextAlign(TextAlignment.CENTER);
 
         // Określenie kierunku układania pojazdów
         double dx = 0, dy = 0;
         switch (direction) {
-            case NORTH: dx = 0; dy = -20; break;
-            case EAST: dx = 20; dy = 0; break;
-            case SOUTH: dx = 0; dy = 20; break;
-            case WEST: dx = -20; dy = 0; break;
+            case NORTH: dx = 0; dy = -30; break;
+            case EAST: dx = 30; dy = 0; break;
+            case SOUTH: dx = 0; dy = 30; break;
+            case WEST: dx = -30; dy = 0; break;
         }
 
         // Rysuj maksymalnie 5 pojazdów w kolejce
         int maxVehiclesToDraw = Math.min(vehicles.size(), 5);
 
         for (int i = 0; i < maxVehiclesToDraw; i++) {
+            SimulationState.QueuedVehicle vehicle = vehicles.get(i);
             double x = startX + i * dx;
             double y = startY + i * dy;
 
-            // Rysuj pojazd jako prostokąt
-            gc.fillRect(x - 8, y - 8, 16, 16);
-
-            // Rysuj ID pojazdu
-            gc.setFill(Color.WHITE);
-            gc.fillText(vehicles.get(i), x, y + 4);
-
-            // Przywróć kolor dla następnego pojazdu
-            gc.setFill(Color.BLUE);
+            // Określ kolor na podstawie typu ruchu (tak samo jak dla animowanych pojazdów)
+            Vehicle.MovementType movementType = vehicle.getMovementType();
+            Color vehicleColor;
+            switch (movementType) {
+                case LEFT: vehicleColor = Color.ORANGE; break;
+                case RIGHT: vehicleColor = Color.CYAN; break;
+                default: vehicleColor = Color.LIME; break; // STRAIGHT
+            }
+            
+            gc.save();  // Zapisz stan obecny
+            
+            // Określ rotację na podstawie kierunku startowego
+            double rotation = 0;
+            switch(direction) {
+                case NORTH: rotation = 90; break;
+                case EAST: rotation = 180; break;
+                case SOUTH: rotation = 270; break;
+                case WEST: rotation = 0; break;
+            }
+            
+            // Przesuń i obróć
+            gc.translate(x, y);
+            gc.rotate(rotation);
+            
+            // Narysuj pojazd w takim samym kształcie jak animowane pojazdy
+            gc.setFill(vehicleColor);
+            gc.fillRect(-10, -6, 20, 12);
+            
+            // Trójkąt wskazujący kierunek
+            double[] triangleX = {10, 15, 10};
+            double[] triangleY = {-6, 0, 6};
+            gc.fillPolygon(triangleX, triangleY, 3);
+            
+            // Tekst z ID pojazdu
+            gc.setFill(Color.BLACK);
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText(vehicle.getId(), 0, 3);
+            
+            gc.restore();  // Przywróć stan
         }
 
         // Jeśli jest więcej pojazdów niż możemy narysować
