@@ -1,6 +1,6 @@
 package avs.simulation;
 
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,14 +1,11 @@
 package avs.simulation;
 
 import avs.simulation.UI.AnimatedVehicle;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import static org.junit.jupiter.api.Assertions.*;
 
-import javafx.animation.Timeline;
-import javafx.util.Duration;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,9 +24,6 @@ public class AnimatedVehicleTest {
             dir -> midpointReached.set(true),
             id -> finished.set(true)
         );
-        
-        // Set a very short animation for testing
-        vehicle.animate(0.2);
         
         // Wait for the animation to reach midpoint
         Thread.sleep(100);

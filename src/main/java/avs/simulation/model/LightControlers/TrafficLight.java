@@ -1,4 +1,4 @@
-package avs.simulation.model;
+package avs.simulation.model.LightControlers;
 
 public class TrafficLight {
     public enum Direction {
@@ -11,7 +11,6 @@ public class TrafficLight {
 
     private LightState currentState;
     private int remainingTime;
-
     public TrafficLight() {
         this.currentState = LightState.RED;
         this.remainingTime = 0;
@@ -34,5 +33,9 @@ public class TrafficLight {
 
     public LightState getCurrentState() {
         return currentState;
+    }
+
+    public int getRemainingTime() {
+        return remainingTime;
     }
 }

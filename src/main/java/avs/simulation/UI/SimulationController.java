@@ -3,7 +3,7 @@ package avs.simulation.UI;
 import avs.simulation.Simulation;
 import avs.simulation.UI.utils.SimulationUIHelper;
 import avs.simulation.model.Intersection;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -18,13 +18,7 @@ import java.util.ResourceBundle;
 public class SimulationController implements Initializable {
     
     @FXML private BorderPane simulationContainer;
-    @FXML private Button addNorthButton;
-    @FXML private Button addEastButton;
-    @FXML private Button addSouthButton;
-    @FXML private Button addWestButton;
-    @FXML private Button stepButton;
     @FXML private Button playPauseButton;
-    @FXML private Button clearButton;
     @FXML private ComboBox<String> controllerTypeComboBox;
     
     private IntersectionView intersectionView;

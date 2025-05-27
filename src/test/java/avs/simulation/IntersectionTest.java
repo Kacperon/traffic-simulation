@@ -1,7 +1,7 @@
 package avs.simulation;
 
 import avs.simulation.model.Intersection;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +37,7 @@ public class IntersectionTest {
         Intersection intersection = new Intersection();
         List<TrafficLight.Direction> greenDirections = intersection.getCurrentGreenDirections();
         assertEquals(1, greenDirections.size());
-        assertEquals(TrafficLight.Direction.NORTH, greenDirections.get(0));
+        assertEquals(TrafficLight.Direction.NORTH, greenDirections.getFirst());
     }
     
     @Test

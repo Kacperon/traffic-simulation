@@ -1,8 +1,6 @@
 package avs.simulation.model;
 
-import avs.simulation.model.LightControlers.AbstractTrafficLightController;
-import avs.simulation.model.LightControlers.PriorityTrafficLightController;
-import avs.simulation.model.LightControlers.StandardTrafficLightController;
+import avs.simulation.model.LightControlers.*;
 
 import java.util.*;
 
@@ -24,7 +22,9 @@ public class Intersection extends AbstractIntersection {
             case PRIORITY:
                 controller = new PriorityTrafficLightController(trafficLights);
                 break;
-            case STANDARD:
+            case OPPOSING:
+                controller = new OpposingTrafficLightController(trafficLights);
+                break;
             default:
                 controller = new StandardTrafficLightController(trafficLights);
                 break;
@@ -33,7 +33,8 @@ public class Intersection extends AbstractIntersection {
     
     public enum ControllerType {
         STANDARD,
-        PRIORITY
+        PRIORITY,
+        OPPOSING
     }
 
     @Override
@@ -49,10 +50,7 @@ public class Intersection extends AbstractIntersection {
         }
         
         controller.updateLightStates();
-        
-        for (TrafficLight light : trafficLights.values()) {
-            light.update();
-        }
+
     }
 
     @Override

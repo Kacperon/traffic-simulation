@@ -3,7 +3,7 @@ package avs.simulation.UI.animation;
 import avs.simulation.UI.AnimatedVehicle;
 import avs.simulation.UI.SimulationState;
 import avs.simulation.UI.renderers.VehicleView;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.*;

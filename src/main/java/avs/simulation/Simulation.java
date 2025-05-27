@@ -3,7 +3,7 @@ package avs.simulation;
 import avs.simulation.UI.SimulationState;
 import avs.simulation.model.Intersection;
 import avs.simulation.model.StepStatus;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import avs.simulation.util.Command;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +24,7 @@ public class Simulation {
 
     private boolean visualMode = false;
     private List<Consumer<SimulationState>> simulationListeners = new CopyOnWriteArrayList<>();
-    private SimulationState currentState = new SimulationState();
+    private SimulationState currentState;
     private static final int MAX_VEHICLES_PER_GREEN = 1; // Limit the number of vehicles per green/yellow light
 
     public Simulation() {
@@ -44,7 +44,7 @@ public class Simulation {
 
     public void runFromJsonFile(String inputFile, String outputFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> input = mapper.readValue(new File(inputFile), Map.class);
+        Map input = mapper.readValue(new File(inputFile), Map.class);
         List<Map<String, Object>> commandsData = (List<Map<String, Object>>) input.get("commands");
         List<Command> commands = parseCommands(commandsData);
 
@@ -75,18 +75,13 @@ public class Simulation {
     }
 
     private TrafficLight.Direction parseDirection(String direction) {
-        switch (direction.toLowerCase()) {
-            case "north":
-                return TrafficLight.Direction.NORTH;
-            case "east":
-                return TrafficLight.Direction.EAST;
-            case "south":
-                return TrafficLight.Direction.SOUTH;
-            case "west":
-                return TrafficLight.Direction.WEST;
-            default:
-                throw new IllegalArgumentException("Unnown: " + direction);
-        }
+        return switch (direction.toLowerCase()) {
+            case "north" -> TrafficLight.Direction.NORTH;
+            case "east" -> TrafficLight.Direction.EAST;
+            case "south" -> TrafficLight.Direction.SOUTH;
+            case "west" -> TrafficLight.Direction.WEST;
+            default -> throw new IllegalArgumentException("Unnown: " + direction);
+        };
     }
 
     private void executeCommand(Command command) {
@@ -102,7 +97,7 @@ public class Simulation {
 
     public void performSimulationStep() {
 
-        StepStatus stepStatus = new StepStatus();
+        StepStatus stepStatus;
         intersection.update(vehicleQueues);
         stepStatus = moveVehiclesAcrossIntersection();
         updateWaitingVehicles();
@@ -240,8 +235,8 @@ public class Simulation {
 
     // Add this method to your Simulation class
     public void setIntersectionControllerType(Intersection.ControllerType type) {
-        if (intersection instanceof Intersection) {
-            ((Intersection) intersection).setControllerType(type);
+        if (intersection != null) {
+            intersection.setControllerType(type);
         }
         
         // Notify listeners about the state change

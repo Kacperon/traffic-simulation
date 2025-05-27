@@ -1,7 +1,7 @@
 package avs.simulation.UI.animation;
 
 import avs.simulation.UI.utils.CircularInterpolator;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;

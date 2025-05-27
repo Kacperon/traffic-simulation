@@ -2,12 +2,12 @@ package avs.simulation.UI;
 
 import avs.simulation.UI.animation.AnimationPathFactory;
 import avs.simulation.UI.utils.DirectionUtils;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.util.Duration;
+
 import java.util.function.Consumer;
 
 public class AnimatedVehicle {

@@ -1,13 +1,12 @@
 package avs.simulation;
 
 import avs.simulation.UI.SimulationState;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class SimulationTest {
     private Simulation simulation;

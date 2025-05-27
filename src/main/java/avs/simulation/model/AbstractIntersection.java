@@ -1,5 +1,7 @@
 package avs.simulation.model;
 
+import avs.simulation.model.LightControlers.TrafficLight;
+
 import java.util.*;
 
 public abstract class AbstractIntersection {

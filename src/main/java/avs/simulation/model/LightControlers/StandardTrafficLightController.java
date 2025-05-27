@@ -1,6 +1,5 @@
 package avs.simulation.model.LightControlers;
 
-import avs.simulation.model.TrafficLight;
 import java.util.Map;
 
 /**
@@ -13,7 +12,6 @@ public class StandardTrafficLightController extends AbstractTrafficLightControll
     private static final int RED_YELLOW_DURATION = 1;
     
     private TrafficLight.Direction currentGreenDirection;
-    private int timeRemaining;
     private enum Phase { GREEN, YELLOW, RED_YELLOW }
     private Phase currentPhase = Phase.GREEN;
     
@@ -25,7 +23,6 @@ public class StandardTrafficLightController extends AbstractTrafficLightControll
     protected void initializeLights() {
         // Start with North direction green
         this.currentGreenDirection = TrafficLight.Direction.NORTH;
-        this.timeRemaining = GREEN_DURATION;
         this.currentPhase = Phase.GREEN;
         
         // Set initial states
@@ -41,16 +38,20 @@ public class StandardTrafficLightController extends AbstractTrafficLightControll
     
     @Override
     public void updateLightStates() {
-        // Decrement time
-        timeRemaining--;
+        // Update all traffic lights
+        for (TrafficLight light : trafficLights.values()) {
+            light.update();
+        }
         
-        if (timeRemaining <= 0) {
+        // Check if current phase is finished
+        TrafficLight currentLight = trafficLights.get(currentGreenDirection);
+        
+        if (currentLight.isStateFinished()) {
             // Time to switch to next phase
             switch (currentPhase) {
                 case GREEN:
                     // Change from green to yellow
                     trafficLights.get(currentGreenDirection).setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
-                    timeRemaining = YELLOW_DURATION;
                     currentPhase = Phase.YELLOW;
                     break;
                     
@@ -65,7 +66,6 @@ public class StandardTrafficLightController extends AbstractTrafficLightControll
                     // Set RED_YELLOW for the next direction
                     trafficLights.get(currentGreenDirection).setState(TrafficLight.LightState.RED_YELLOW, RED_YELLOW_DURATION);
                     
-                    timeRemaining = RED_YELLOW_DURATION;
                     currentPhase = Phase.RED_YELLOW;
                     break;
                     
@@ -73,8 +73,7 @@ public class StandardTrafficLightController extends AbstractTrafficLightControll
                     // Change from red-yellow to green
                     trafficLights.get(currentGreenDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
                     
-                    // Reset timings for new green phase
-                    timeRemaining = GREEN_DURATION;
+                    // Reset phase
                     currentPhase = Phase.GREEN;
                     break;
             }
@@ -83,13 +82,12 @@ public class StandardTrafficLightController extends AbstractTrafficLightControll
     
     private TrafficLight.Direction getNextDirection() {
         // Simple clockwise rotation: NORTH → EAST → SOUTH → WEST → NORTH
-        switch (currentGreenDirection) {
-            case NORTH: return TrafficLight.Direction.EAST;
-            case EAST: return TrafficLight.Direction.SOUTH;
-            case SOUTH: return TrafficLight.Direction.WEST;
-            case WEST: return TrafficLight.Direction.NORTH;
-            default: return TrafficLight.Direction.NORTH; // Fallback
-        }
+        return switch (currentGreenDirection) {
+            case NORTH -> TrafficLight.Direction.EAST;
+            case EAST -> TrafficLight.Direction.SOUTH;
+            case SOUTH -> TrafficLight.Direction.WEST;
+            case WEST -> TrafficLight.Direction.NORTH;
+        };
     }
     
     @Override

@@ -1,7 +1,7 @@
 package avs.simulation.UI.renderers;
 
 import avs.simulation.UI.SimulationState;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 

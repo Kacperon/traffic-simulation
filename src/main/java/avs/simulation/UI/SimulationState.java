@@ -1,7 +1,6 @@
 package avs.simulation.UI;
 
-import avs.simulation.UI.utils.SimulationUIHelper;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import avs.simulation.UI.utils.DirectionUtils;
 
@@ -58,11 +57,6 @@ public class SimulationState {
         crossingVehicles.add(new CrossingVehicle(id, from, to, 0));
     }
 
-    // Example of where you might create vehicle IDs in SimulationState
-    public void addRandomCrossingVehicle(TrafficLight.Direction fromDir, TrafficLight.Direction toDir) {
-        String id = SimulationUIHelper.generateRandomVehicleId();
-        addCrossingVehicle(id, fromDir, toDir);
-    }
 
     public void removeVehicleFromAnimation(String id) {
         Iterator<CrossingVehicle> iterator = crossingVehicles.iterator();
@@ -76,8 +70,8 @@ public class SimulationState {
         }
     }
 
-    public class CrossingVehicle {
-        private String id;
+    public static class CrossingVehicle {
+        private final String id;
         private TrafficLight.Direction fromDirection;
         private TrafficLight.Direction toDirection;
         private int animationStep;
@@ -89,7 +83,6 @@ public class SimulationState {
             this.animationStep = animationStep;
         }
 
-        // Dodaj gettery
         public String getId() {
             return id;
         }

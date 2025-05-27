@@ -1,7 +1,7 @@
 package avs.simulation;
 
 import avs.simulation.UI.renderers.TrafficLightView;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import org.junit.jupiter.api.Test;
 
 import javafx.scene.canvas.Canvas;

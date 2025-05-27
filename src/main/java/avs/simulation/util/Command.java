@@ -1,6 +1,6 @@
 package avs.simulation.util;
 
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 
 public class Command {
     public enum CommandType {

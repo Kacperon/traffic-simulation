@@ -1,6 +1,5 @@
 package avs.simulation.model.LightControlers;
 
-import avs.simulation.model.TrafficLight;
 import avs.simulation.model.Vehicle;
 
 import java.util.HashMap;
@@ -15,7 +14,7 @@ public class PriorityTrafficLightController extends AbstractTrafficLightControll
     private static final int GREEN_DURATION = 4;
     private static final int YELLOW_DURATION = 1;
     private static final int RED_DURATION = 1;
-    private static final int MIN_VEHICLES_FOR_PRIORITY = 4;
+    private static final int MIN_VEHICLES_FOR_PRIORITY = 3;
     
     private TrafficLight.Direction currentGreenDirection;
     private Map<TrafficLight.Direction, Integer> queueLengths;

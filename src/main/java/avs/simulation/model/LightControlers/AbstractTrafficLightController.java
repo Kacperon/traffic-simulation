@@ -1,7 +1,5 @@
 package avs.simulation.model.LightControlers;
 
-import avs.simulation.model.TrafficLight;
-
 import java.util.Map;
 
 /**
@@ -35,6 +33,20 @@ public abstract class AbstractTrafficLightController {
      * @return The direction with a green light, or null if no direction has a green light
      */
     public abstract TrafficLight.Direction getCurrentGreenDirection();
+    
+    /**
+     * Enhanced method to check if a vehicle can cross, considering its destination.
+     * This allows proper handling of left turns.
+     * 
+     * @param fromDirection The direction the vehicle is coming from
+     * @param toDirection The direction the vehicle is going to
+     * @return True if the vehicle can cross, false otherwise
+     */
+    public boolean canVehicleCross(TrafficLight.Direction fromDirection,
+                                  TrafficLight.Direction toDirection) {
+        // Default implementation just uses the basic check
+        return canVehicleCross(fromDirection);
+    }
     
     /**
      * Check if a vehicle from a specific direction can cross

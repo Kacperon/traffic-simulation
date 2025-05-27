@@ -1,5 +1,8 @@
 package avs.simulation.model;
 
+import avs.simulation.UI.utils.DirectionUtils;
+import avs.simulation.model.LightControlers.TrafficLight;
+
 /**
  * Reprezentuje pojazd w symulacji
  */
@@ -17,6 +20,10 @@ public class Vehicle {
         COMPLETED
     }
     
+    public enum MovementType {
+        STRAIGHT, LEFT, RIGHT
+    }
+    
     public Vehicle(String vehicleId, TrafficLight.Direction startRoad, TrafficLight.Direction endRoad) {
         this.vehicleId = vehicleId;
         this.startRoad = startRoad;
@@ -30,13 +37,11 @@ public class Vehicle {
             waitingTime++;
         }
     }
+    
     public void startCrossing() {
         if (state == VehicleState.WAITING) {
             state = VehicleState.CROSSING;
         }
-    }
-    public enum MovementType {
-        STRAIGHT, LEFT, RIGHT
     }
 
     public String getVehicleId() {
@@ -57,13 +62,12 @@ public class Vehicle {
                 vehicleId, startRoad, endRoad, state, waitingTime);
     }
 
+    /**
+     * Get the movement type (LEFT, STRAIGHT, RIGHT) based on start and end directions
+     * @return The movement type
+     */
     public MovementType getMovementType() {
-        int diff = (endRoad.ordinal() - startRoad.ordinal() + 4) % 4;
-        switch (diff) {
-            case 1: return MovementType.LEFT;
-            case 2: return MovementType.STRAIGHT;
-            case 3: return MovementType.RIGHT;
-            default: return MovementType.STRAIGHT;
-        }
+        // Use DirectionUtils instead of duplicating the logic
+        return DirectionUtils.getMovementType(startRoad, endRoad);
     }
 }

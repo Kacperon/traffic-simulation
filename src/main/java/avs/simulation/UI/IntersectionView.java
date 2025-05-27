@@ -2,7 +2,7 @@ package avs.simulation.UI;
 
 import avs.simulation.UI.animation.QueueAnimationManager;
 import avs.simulation.UI.animation.VehicleAnimationManager;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import javafx.scene.canvas.Canvas;
 import javafx.animation.AnimationTimer;
 
@@ -13,8 +13,7 @@ import java.util.Set;
  */
 public class IntersectionView extends Canvas {
     private SimulationState currentState;
-    private AnimationTimer animationTimer;
-    
+
     // Component managers
     private final avs.simulation.UI.renderers.IntersectionView renderer;
     private final VehicleAnimationManager vehicleAnimationManager;
@@ -34,7 +33,7 @@ public class IntersectionView extends Canvas {
         queueAnimationManager = new QueueAnimationManager();
         
         // Set up animation timer for continuous rendering
-        animationTimer = new AnimationTimer() {
+        AnimationTimer animationTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 redrawCanvas();

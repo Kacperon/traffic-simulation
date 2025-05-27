@@ -1,7 +1,7 @@
 package avs.simulation;
 
 import avs.simulation.UI.SimulationState;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import avs.simulation.model.Vehicle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ public class SimulationStateTest {
         
         List<SimulationState.CrossingVehicle> crossing = state.getCrossingVehicles();
         assertEquals(1, crossing.size());
-        assertEquals("v1", crossing.get(0).getId());
+        assertEquals("v1", crossing.getFirst().getId());
         
         state.removeVehicleFromAnimation("v1");
         assertTrue(state.getCrossingVehicles().isEmpty());

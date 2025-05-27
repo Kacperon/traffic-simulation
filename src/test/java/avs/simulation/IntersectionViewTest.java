@@ -2,10 +2,12 @@ package avs.simulation;
 
 import avs.simulation.UI.IntersectionView;
 import avs.simulation.UI.SimulationState;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
+
+import java.util.List;
 
 // Note: This test requires JavaFX runtime - it may need to be run 
 // with a specific JUnit launcher that supports JavaFX
@@ -48,8 +50,8 @@ public class IntersectionViewTest {
         state.setLightState(TrafficLight.Direction.NORTH, TrafficLight.LightState.GREEN);
         
         // Add a vehicle to a queue
-        state.setVehicleQueue(TrafficLight.Direction.NORTH, java.util.Arrays.asList(
-            new SimulationState.QueuedVehicle("test", TrafficLight.Direction.NORTH, TrafficLight.Direction.SOUTH)
+        state.setVehicleQueue(TrafficLight.Direction.NORTH, List.of(
+                new SimulationState.QueuedVehicle("test", TrafficLight.Direction.NORTH, TrafficLight.Direction.SOUTH)
         ));
         
         // This should not throw exceptions

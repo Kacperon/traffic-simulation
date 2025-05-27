@@ -2,7 +2,7 @@ package avs.simulation.UI.animation;
 
 import avs.simulation.UI.SimulationState;
 import avs.simulation.UI.renderers.VehicleView;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -131,9 +131,7 @@ public class QueueAnimationManager {
             timeline.getKeyFrames().add(moveFrame);
         }
 
-        timeline.setOnFinished(e -> {
-            currentQueuePositions.put(direction, new ArrayList<>(targetPositions));
-        });
+        timeline.setOnFinished(e -> currentQueuePositions.put(direction, new ArrayList<>(targetPositions)));
         
         return timeline;
     }
@@ -158,7 +156,7 @@ public class QueueAnimationManager {
 
         double startX, startY;
         double dx = 0, dy = 0;
-        double rotation = 0;
+        double rotation;
         
         switch (direction) {
             case NORTH:

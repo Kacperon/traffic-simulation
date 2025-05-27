@@ -2,7 +2,7 @@ package avs.simulation.UI.utils;
 
 import avs.simulation.Simulation;
 import avs.simulation.model.Intersection;
-import avs.simulation.model.TrafficLight;
+import avs.simulation.model.LightControlers.TrafficLight;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -31,9 +31,7 @@ public class SimulationUIHelper {
      * Create and configure a simulation timeline
      */
     public static Timeline createSimulationTimeline(Simulation simulation, float timeStep) {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(timeStep), e -> {
-            simulation.performSimulationStep();
-        }));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(timeStep), e -> simulation.performSimulationStep()));
         timeline.setCycleCount(Animation.INDEFINITE);
         return timeline;
     }
@@ -42,7 +40,7 @@ public class SimulationUIHelper {
      * Generate a vehicle ID
      */
     public static String generateRandomVehicleId() {
-        return "V" + (int)(Math.random() * 1000);
+        return "V" + (int)(Math.random() * 100);
     }
     
     /**
@@ -63,13 +61,10 @@ public class SimulationUIHelper {
      * Convert controller type string to enum
      */
     public static Intersection.ControllerType getControllerTypeFromString(String controllerTypeString) {
-        switch (controllerTypeString) {
-            case "Priority":
-                return Intersection.ControllerType.PRIORITY;
-//            case "Opposing":
-//                return Intersection.ControllerType.OPPOSING;
-            default:
-                return Intersection.ControllerType.STANDARD;
-        }
+        return switch (controllerTypeString) {
+            case "Priority" -> Intersection.ControllerType.PRIORITY;
+            case "Opposing" -> Intersection.ControllerType.OPPOSING;
+            default -> Intersection.ControllerType.STANDARD;
+        };
     }
 }
