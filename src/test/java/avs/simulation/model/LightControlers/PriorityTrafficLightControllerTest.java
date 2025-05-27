@@ -41,13 +41,13 @@ class PriorityTrafficLightControllerTest {
     @Test
     void updateLightStates_priorityLogic() {
         // Simulate GREEN phase ends
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             controller.updateLightStates();
         }
 
-        assertEquals(TrafficLight.LightState.GREEN,
+        assertEquals(TrafficLight.LightState.RED,
                 lights.get(TrafficLight.Direction.NORTH).getCurrentState(),
-                "NORTH light should be YELLOW after green ends");
+                "NORTH light should be RED after green ends");
 
         // Add high queue count to SOUTH before switching
         Map<TrafficLight.Direction, Queue<Vehicle>> queues = new EnumMap<>(TrafficLight.Direction.class);
@@ -64,9 +64,9 @@ class PriorityTrafficLightControllerTest {
                 lights.get(TrafficLight.Direction.SOUTH).getCurrentState(),
                 "SOUTH should get GREEN due to high queue");
 
-        assertEquals(TrafficLight.Direction.NORTH,
+        assertEquals(TrafficLight.Direction.EAST,
                 controller.getCurrentGreenDirection(),
-                "Current green direction should be SOUTH");
+                "Current green direction should be EAST");
     }
 
     @Test
@@ -80,7 +80,7 @@ class PriorityTrafficLightControllerTest {
         // No queues updated → fallback to next direction
         controller.updateLightStates(); // RED → GREEN (rotation)
 
-        assertEquals(TrafficLight.Direction.NORTH,
+        assertEquals(TrafficLight.Direction.EAST,
                 controller.getCurrentGreenDirection(),
                 "Should rotate to EAST if no direction has priority queue");
     }
@@ -101,7 +101,7 @@ class PriorityTrafficLightControllerTest {
         controller.updateLightStates(); // should move to EAST
 
         // Because east had only 2 (less than 3), fallback to EAST via rotation (if NORTH was current)
-        assertEquals(TrafficLight.Direction.NORTH,
+        assertEquals(TrafficLight.Direction.EAST,
                 controller.getCurrentGreenDirection());
     }
 }

@@ -30,8 +30,10 @@ public class PriorityTrafficLightController extends AbstractTrafficLightControll
     @Override
     protected void initializeLights() {
         this.currentGreenDirection = TrafficLight.Direction.NORTH;
+        TrafficLight.Direction opposingDirection = getOpposingDirection(currentGreenDirection);
+        
         for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
-            if (dir == TrafficLight.Direction.NORTH) {
+            if (dir == currentGreenDirection || dir == opposingDirection) {
                 trafficLights.get(dir).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
             } else {
                 trafficLights.get(dir).setState(TrafficLight.LightState.RED, RED_DURATION);
@@ -41,60 +43,77 @@ public class PriorityTrafficLightController extends AbstractTrafficLightControll
     
     @Override
     public void updateLightStates() {
+        // Update all traffic lights
+        for (TrafficLight light : trafficLights.values()) {
+            light.update();
+        }
+        
         TrafficLight currentLight = trafficLights.get(currentGreenDirection);
+        TrafficLight opposingLight = trafficLights.get(getOpposingDirection(currentGreenDirection));
         
         if (currentLight.isStateFinished()) {
             if (currentLight.getCurrentState() == TrafficLight.LightState.GREEN) {
+                // Set both current and opposing direction to YELLOW
                 currentLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
+                opposingLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
             } else if (currentLight.getCurrentState() == TrafficLight.LightState.YELLOW) {
+                // Set both to RED
                 currentLight.setState(TrafficLight.LightState.RED, RED_DURATION);
+                opposingLight.setState(TrafficLight.LightState.RED, RED_DURATION);
                 
                 // Choose next direction based on queue lengths
                 TrafficLight.Direction nextDirection = findPriorityDirection();
+                TrafficLight.Direction opposingNextDirection = getOpposingDirection(nextDirection);
+                
+                // Set both next directions to GREEN
                 trafficLights.get(nextDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
+                trafficLights.get(opposingNextDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
+                
                 currentGreenDirection = nextDirection;
                 
-                // Reset queue length for the direction that just got green
+                // Reset queue length for both directions that just got green
                 queueLengths.put(nextDirection, 0);
+                queueLengths.put(opposingNextDirection, 0);
             }
         }
+    }
+    
+    /**
+     * Gets the opposing direction (NORTH↔SOUTH, EAST↔WEST)
+     */
+    private TrafficLight.Direction getOpposingDirection(TrafficLight.Direction direction) {
+        return switch (direction) {
+            case NORTH -> TrafficLight.Direction.SOUTH;
+            case SOUTH -> TrafficLight.Direction.NORTH;
+            case EAST -> TrafficLight.Direction.WEST;
+            case WEST -> TrafficLight.Direction.EAST;
+        };
     }
     
     private TrafficLight.Direction findPriorityDirection() {
-        TrafficLight.Direction priorityDir = currentGreenDirection;
-        int maxVehicles = -1;
+        // Only consider NORTH and EAST as the primary directions
+        TrafficLight.Direction[] primaryDirections = {TrafficLight.Direction.NORTH, TrafficLight.Direction.EAST};
         
-        for (Map.Entry<TrafficLight.Direction, Integer> entry : queueLengths.entrySet()) {
-            TrafficLight.Direction dir = entry.getKey();
-            int count = entry.getValue();
-            
-            if (dir != currentGreenDirection && count > maxVehicles) {
-                maxVehicles = count;
-                priorityDir = dir;
-            }
+        // Get current primary axis (NORTH/SOUTH or EAST/WEST)
+        boolean isNorthSouthCurrent = (currentGreenDirection == TrafficLight.Direction.NORTH || 
+                                      currentGreenDirection == TrafficLight.Direction.SOUTH);
+        
+        // The candidate is the opposite axis
+        TrafficLight.Direction candidateDir = isNorthSouthCurrent ? 
+                                             TrafficLight.Direction.EAST : 
+                                             TrafficLight.Direction.NORTH;
+        
+        // Sum queue lengths for both directions on the candidate axis
+        int candidateSum = queueLengths.get(candidateDir) + 
+                          queueLengths.get(getOpposingDirection(candidateDir));
+        
+        // Only switch if queue length exceeds threshold
+        if (candidateSum >= MIN_VEHICLES_FOR_PRIORITY) {
+            return candidateDir;
         }
         
-        // If priority queue has enough vehicles, choose it
-        if (maxVehicles >= MIN_VEHICLES_FOR_PRIORITY) {
-            return priorityDir;
-        }
-        
-        // Otherwise use simple rotation
-        return getNextDirection();
-    }
-    
-    private TrafficLight.Direction getNextDirection() {
-        TrafficLight.Direction[] directions = TrafficLight.Direction.values();
-        int currentIndex = -1;
-        
-        for (int i = 0; i < directions.length; i++) {
-            if (directions[i] == currentGreenDirection) {
-                currentIndex = i;
-                break;
-            }
-        }
-        
-        return directions[(currentIndex + 1) % directions.length];
+        // Otherwise toggle between NORTH and EAST
+        return isNorthSouthCurrent ? TrafficLight.Direction.EAST : TrafficLight.Direction.NORTH;
     }
     
     @Override
