@@ -1,9 +1,8 @@
 package avs.simulation;
 
-import avs.simulation.UI.VehicleView;
+import avs.simulation.UI.renderers.VehicleView;
 import avs.simulation.model.Vehicle;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;

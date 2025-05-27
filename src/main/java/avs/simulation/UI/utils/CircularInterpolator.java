@@ -1,4 +1,4 @@
-package avs.simulation.UI;
+package avs.simulation.UI.utils;
 
 import javafx.animation.Interpolator;
 

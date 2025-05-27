@@ -25,9 +25,6 @@ public class Main {
         if (args.length == 0) {
             System.out.println("Starting traffic simulation visualization...");
             SimulationVisualizer.main(args);
-            return;
         }
-        
-        // Rest of the existing code...
     }
 }

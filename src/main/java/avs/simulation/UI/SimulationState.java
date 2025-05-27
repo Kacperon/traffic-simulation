@@ -1,7 +1,9 @@
 package avs.simulation.UI;
 
+import avs.simulation.UI.utils.SimulationUIHelper;
 import avs.simulation.model.TrafficLight;
 import avs.simulation.model.Vehicle;
+import avs.simulation.UI.utils.DirectionUtils;
 
 import java.util.*;
 
@@ -56,6 +58,11 @@ public class SimulationState {
         crossingVehicles.add(new CrossingVehicle(id, from, to, 0));
     }
 
+    // Example of where you might create vehicle IDs in SimulationState
+    public void addRandomCrossingVehicle(TrafficLight.Direction fromDir, TrafficLight.Direction toDir) {
+        String id = SimulationUIHelper.generateRandomVehicleId();
+        addCrossingVehicle(id, fromDir, toDir);
+    }
 
     public void removeVehicleFromAnimation(String id) {
         Iterator<CrossingVehicle> iterator = crossingVehicles.iterator();
@@ -102,6 +109,11 @@ public class SimulationState {
         public void setAnimationStep(int animationStep) {
             this.animationStep = animationStep;
         }
+
+        // Add this method to the CrossingVehicle class
+        public Vehicle.MovementType getMovementType() {
+            return DirectionUtils.getMovementType(fromDirection, toDirection);
+        }
     }
 
     // Add this new class to represent queued vehicles with their directions
@@ -122,13 +134,8 @@ public class SimulationState {
 
         // Helper method to determine movement type
         public Vehicle.MovementType getMovementType() {
-            int diff = (endRoad.ordinal() - startRoad.ordinal() + 4) % 4;
-            switch (diff) {
-                case 1: return Vehicle.MovementType.LEFT;
-                case 2: return Vehicle.MovementType.STRAIGHT;
-                case 3: return Vehicle.MovementType.RIGHT;
-                default: return Vehicle.MovementType.STRAIGHT;
-            }
+            // Use the utility method instead of duplicating logic
+            return DirectionUtils.getMovementType(startRoad, endRoad);
         }
     }
 }

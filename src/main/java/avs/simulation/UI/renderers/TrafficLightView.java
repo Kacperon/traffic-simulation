@@ -1,4 +1,4 @@
-package avs.simulation.UI;
+package avs.simulation.UI.renderers;
 
 import avs.simulation.model.TrafficLight;
 import javafx.scene.canvas.GraphicsContext;

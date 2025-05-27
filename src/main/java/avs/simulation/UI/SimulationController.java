@@ -1,10 +1,9 @@
 package avs.simulation.UI;
 
 import avs.simulation.Simulation;
+import avs.simulation.UI.utils.SimulationUIHelper;
 import avs.simulation.model.Intersection;
 import avs.simulation.model.TrafficLight;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -12,9 +11,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.util.Duration;
 import javafx.event.ActionEvent;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -35,7 +31,7 @@ public class SimulationController implements Initializable {
     private Simulation simulation;
     private Timeline timeline;
     private boolean isRunning = false;
-    private final static float TIMESTEP = 0.7f;
+    private final static float TIMESTEP = 0.6f;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,11 +43,8 @@ public class SimulationController implements Initializable {
         simulation = new Simulation();
         simulation.setVisualMode(true);
         
-        // Set up the timeline for automated simulation
-        timeline = new Timeline(new KeyFrame(Duration.seconds(TIMESTEP), e -> {
-            simulation.performSimulationStep();
-        }));
-        timeline.setCycleCount(Animation.INDEFINITE);
+        // Set up the timeline for automated simulation using helper
+        timeline = SimulationUIHelper.createSimulationTimeline(simulation, TIMESTEP);
         
         // Register simulation listener for visualization updates
         simulation.addSimulationListener(simulationState -> {
@@ -61,12 +54,8 @@ public class SimulationController implements Initializable {
         // Initial update
         intersectionView.update(simulation.getCurrentState());
         
-        // Set up controller type combo box
-        ObservableList<String> controllerTypes = FXCollections.observableArrayList(
-            "Standard", "Priority"
-        );
-        controllerTypeComboBox.setItems(controllerTypes);
-        controllerTypeComboBox.setValue("Standard");
+        // Set up controller type combo box using helper
+        SimulationUIHelper.setupControllerTypeComboBox(controllerTypeComboBox, "Standard");
     }
     
     @FXML
@@ -126,24 +115,15 @@ public class SimulationController implements Initializable {
     @FXML
     public void changeControllerType(ActionEvent event) {
         String selectedType = controllerTypeComboBox.getValue();
+        Intersection.ControllerType type = SimulationUIHelper.getControllerTypeFromString(selectedType);
         
-        if ("Priority".equals(selectedType)) {
-            simulation.setIntersectionControllerType(Intersection.ControllerType.PRIORITY);
-            System.out.println("Switched to Priority traffic light controller");
-        } else {
-            simulation.setIntersectionControllerType(Intersection.ControllerType.STANDARD);
-            System.out.println("Switched to Standard traffic light controller");
-        }
+        simulation.setIntersectionControllerType(type);
+        System.out.println("Switched to " + selectedType + " traffic light controller");
     }
     
-    // Add this method to SimulationController
     public void setInitialControllerType(Intersection.ControllerType type) {
         // Update UI to match actual controller type
-        if (type == Intersection.ControllerType.PRIORITY) {
-            controllerTypeComboBox.setValue("Priority");
-        } else {
-            controllerTypeComboBox.setValue("Standard");
-        }
+        controllerTypeComboBox.setValue(type == Intersection.ControllerType.PRIORITY ? "Priority" : "Standard");
         
         // Set the controller type in the simulation
         if (simulation != null) {
@@ -152,14 +132,10 @@ public class SimulationController implements Initializable {
     }
     
     private void addRandomVehicle(TrafficLight.Direction startDirection) {
-        TrafficLight.Direction[] directions = TrafficLight.Direction.values();
-        TrafficLight.Direction endDirection;
+        // Use helper methods for generating random vehicle data
+        TrafficLight.Direction endDirection = SimulationUIHelper.getRandomEndDirection(startDirection);
+        String vehicleId = SimulationUIHelper.generateRandomVehicleId();
         
-        do {
-            endDirection = directions[(int)(Math.random() * directions.length)];
-        } while (endDirection == startDirection);
-        
-        String vehicleId = "V" + (int)(Math.random() * 1000);
         simulation.addVehicle(vehicleId, startDirection, endDirection);
     }
 }

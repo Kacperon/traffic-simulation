@@ -1,4 +1,4 @@
-package avs.simulation.UI;
+package avs.simulation.UI.renderers;
 
 import avs.simulation.model.Vehicle;
 import javafx.scene.canvas.GraphicsContext;

@@ -1,6 +1,6 @@
 package avs.simulation;
 
-import avs.simulation.UI.CircularInterpolator;
+import avs.simulation.UI.utils.CircularInterpolator;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

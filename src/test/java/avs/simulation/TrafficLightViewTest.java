@@ -1,9 +1,8 @@
 package avs.simulation;
 
-import avs.simulation.UI.TrafficLightView;
+import avs.simulation.UI.renderers.TrafficLightView;
 import avs.simulation.model.TrafficLight;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
