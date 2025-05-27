@@ -3,9 +3,9 @@
 A configurable traffic intersection simulation with multiple traffic light controller types.
 
 ## Overview
-
-
-
+<p align="center">
+  <img src="For_Readme.jpg" alt="Logo" width="500"/>
+</p>
 This project simulates traffic flow through an intersection controlled by various types of traffic light systems. It offers both visual simulation mode and file-based processing for batch simulations.
 
 ## Features
