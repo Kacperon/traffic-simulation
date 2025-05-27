@@ -66,8 +66,8 @@ public class SimulationUIHelper {
         switch (controllerTypeString) {
             case "Priority":
                 return Intersection.ControllerType.PRIORITY;
-            case "Opposing":
-                return Intersection.ControllerType.OPPOSING;
+//            case "Opposing":
+//                return Intersection.ControllerType.OPPOSING;
             default:
                 return Intersection.ControllerType.STANDARD;
         }
