@@ -237,4 +237,20 @@ public class Simulation {
             listener.accept(currentState);
         }
     }
+
+    // Add this method to your Simulation class
+    public void setIntersectionControllerType(Intersection.ControllerType type) {
+        if (intersection instanceof Intersection) {
+            ((Intersection) intersection).setControllerType(type);
+        }
+        
+        // Notify listeners about the state change
+        notifyListeners(getCurrentState());
+    }
+
+    private void notifyListeners(SimulationState state) {
+        for (Consumer<SimulationState> listener : simulationListeners) {
+            listener.accept(state);
+        }
+    }
 }

@@ -1,22 +1,25 @@
 package avs.simulation.UI;
 
-import avs.simulation.*;
+import avs.simulation.Simulation;
+import avs.simulation.model.Intersection;
 import avs.simulation.model.TrafficLight;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.control.Button;
 import javafx.stage.Stage;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.util.Duration;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SimulationVisualizer extends Application {
     private Simulation simulation;
@@ -24,10 +27,14 @@ public class SimulationVisualizer extends Application {
     private Timeline timeline;
     private boolean isRunning = false;
     private final static float TIMESTEP = 0.7f;
+    private Intersection.ControllerType initialControllerType = Intersection.ControllerType.STANDARD;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
+            // Parse parameters if provided
+            parseParameters();
+
             // Ensure the FXML file can be found
             URL fxmlUrl = getClass().getResource("/fxml/SimulationView.fxml");
             if (fxmlUrl == null) {
@@ -40,6 +47,10 @@ public class SimulationVisualizer extends Application {
             // Load FXML
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
             Parent root = loader.load();
+
+            // Get controller and set initial controller type if specified
+            SimulationController controller = loader.getController();
+            controller.setInitialControllerType(initialControllerType);
 
             // Set up scene
             Scene scene = new Scene(root, 800, 500);
@@ -59,6 +70,19 @@ public class SimulationVisualizer extends Application {
             e.printStackTrace();
             // Fall back to non-FXML UI if FXML loading fails
             createSimpleUI(primaryStage);
+        }
+    }
+
+    private void parseParameters() {
+        Parameters params = getParameters();
+        if (params != null) {
+            Map<String, String> namedParams = params.getNamed();
+
+            // Check for controller type parameter
+            String controllerType = namedParams.get("controller");
+            if ("priority".equalsIgnoreCase(controllerType)) {
+                initialControllerType = Intersection.ControllerType.PRIORITY;
+            }
         }
     }
 

@@ -52,45 +52,18 @@ public class SimulationState {
         return crossingVehicles;
     }
 
-    // Metoda do dodawania pojazdów do animacji
     public void addCrossingVehicle(String id, TrafficLight.Direction from, TrafficLight.Direction to) {
         crossingVehicles.add(new CrossingVehicle(id, from, to, 0));
     }
 
-    /**
-     * Aktualizuje stan animacji pojazdów przejeżdżających
-     * i usuwa te, które zakończyły animację
-     */
-    public void updateCrossingAnimations() {
-        // Stwórz nową listę tylko z pojazdami, które nie ukończyły animacji
-        List<CrossingVehicle> remainingVehicles = new ArrayList<>();
 
-        for (CrossingVehicle vehicle : crossingVehicles) {
-            int newStep = vehicle.getAnimationStep() + 1;
-            vehicle.setAnimationStep(newStep);
-
-            // Zachowaj tylko pojazdy, które nie zakończyły animacji
-            if (newStep <= 2) {
-                remainingVehicles.add(vehicle);
-            } else {
-                System.out.println("Usunięto pojazd z animacji: " + vehicle.getId());
-            }
-        }
-
-        // Zastąp starą listę nową (bez ukończonych animacji)
-        this.crossingVehicles = remainingVehicles;
-    }
-
-    /**
-     * Usuwa pojazd z listy animowanych pojazdów
-     */
     public void removeVehicleFromAnimation(String id) {
         Iterator<CrossingVehicle> iterator = crossingVehicles.iterator();
         while (iterator.hasNext()) {
             CrossingVehicle vehicle = iterator.next();
             if (vehicle.getId().equals(id)) {
                 iterator.remove();
-                System.out.println("Usunięto pojazd z symulacji: " + id);
+                System.out.println("Removed: " + id);
                 break;
             }
         }

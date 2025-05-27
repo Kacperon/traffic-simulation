@@ -35,8 +35,4 @@ public class TrafficLight {
     public LightState getCurrentState() {
         return currentState;
     }
-
-    public int getRemainingTime() {
-        return remainingTime;
-    }
 }
