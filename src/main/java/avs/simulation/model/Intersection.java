@@ -4,7 +4,7 @@ import avs.simulation.model.LightControlers.*;
 
 import java.util.*;
 
-public class Intersection extends AbstractIntersection {
+public class Intersection extends AbstractIntersection{
     private AbstractTrafficLightController controller;
 
     public Intersection() {
@@ -16,19 +16,7 @@ public class Intersection extends AbstractIntersection {
         for (TrafficLight.Direction direction : TrafficLight.Direction.values()) {
             trafficLights.put(direction, new TrafficLight());
         }
-
-        // Create the appropriate controller based on type
-        switch (controllerType) {
-            case PRIORITY:
-                controller = new PriorityTrafficLightController(trafficLights);
-                break;
-            case OPPOSING:
-                controller = new OpposingTrafficLightController(trafficLights);
-                break;
-            default:
-                controller = new StandardTrafficLightController(trafficLights);
-                break;
-        }
+        setControllerType(controllerType);
     }
     
     public enum ControllerType {
@@ -53,43 +41,70 @@ public class Intersection extends AbstractIntersection {
 
     }
 
-    @Override
-    public List<TrafficLight.Direction> getCurrentGreenDirections() {
-        List<TrafficLight.Direction> directions = new ArrayList<>();
 
+    public List<TrafficLight.Direction> getCurrentGreenDirections(Map<TrafficLight.Direction, Queue<Vehicle>> vehicleQueues) {
+        List<TrafficLight.Direction> directions = new ArrayList<>();
+        List<TrafficLight.Direction> leftTurningTrafic = new ArrayList<>();
         for (Map.Entry<TrafficLight.Direction, TrafficLight> entry : trafficLights.entrySet()) {
             TrafficLight.Direction dir = entry.getKey();
+            Queue<Vehicle> queue = vehicleQueues.get(dir);
+            
+            // Skip empty queues
+            if (queue == null || queue.isEmpty()) {
+                continue;
+            }
+
             if (controller.canVehicleCross(dir)) {
-                directions.add(dir);
+                // Peek at first vehicle without removing it yet
+                Vehicle vehicle = queue.peek();
+                
+                boolean canCross = false;
+
+                if (controller instanceof OpposingTrafficLightController) {
+                    // Special rules for OpposingTrafficLightController
+                    OpposingTrafficLightController otc = (OpposingTrafficLightController) controller;
+                    
+                    if (vehicle.getMovementType() == Vehicle.MovementType.RIGHT) {
+                        // Left turns only on yellow
+                        canCross = otc.canLeftTurn(dir);
+                        leftTurningTrafic.add(dir);
+
+                    } else {
+                        // Straight and right turns on green
+                        canCross = otc.canRightStraightCross(dir);
+                    }
+                } else {
+                    // Default behavior for other controllers
+                    canCross = true;
+                }
+                
+                if (canCross) {
+                    directions.add(dir);
+                    // Don't remove the vehicle here - that happens in processVehicles
+                }
             }
         }
-
-        return directions;
+        return !directions.isEmpty() ? directions : leftTurningTrafic;
     }
     
     @Override
     public void processVehicles(Map<TrafficLight.Direction, Queue<Vehicle>> vehicleQueues,
                                StepStatus stepStatus,
                                List<Vehicle> completedVehicles) {
-        // Get all directions that allow crossing (green OR yellow)
-        List<TrafficLight.Direction> crossableDirections = getCurrentGreenDirections();
-        
+
+        List<TrafficLight.Direction> crossableDirections = getCurrentGreenDirections(vehicleQueues);
         for (TrafficLight.Direction dir : crossableDirections) {
+
             Queue<Vehicle> queue = vehicleQueues.get(dir);
             if (queue == null || queue.isEmpty()) {
                 continue;
             }
-            
-            // Process up to 2 vehicles per green/yellow light
-            int vehiclesToProcess = Math.min(queue.size(), 2);
-            
-            for (int i = 0; i < vehiclesToProcess; i++) {
-                Vehicle v = queue.poll();
-                if (v != null) {
-                    v.startCrossing();
-                    completedVehicles.add(v);
-                    stepStatus.addLeftVehicle(v.getVehicleId());
-                }
+            Vehicle v = queue.poll();
+            if (v != null) {
+                v.startCrossing();
+                completedVehicles.add(v);
+                stepStatus.addLeftVehicle(v.getVehicleId());
+
             }
         }
     }
@@ -107,20 +122,10 @@ public class Intersection extends AbstractIntersection {
             (type == ControllerType.OPPOSING && controller instanceof OpposingTrafficLightController)) {
             return;
         }
-        
-        switch (type) {
-            case PRIORITY:
-                controller = new PriorityTrafficLightController(trafficLights);
-                break;
-            case STANDARD:
-                controller = new StandardTrafficLightController(trafficLights);
-                break;
-            case OPPOSING:
-                controller = new OpposingTrafficLightController(trafficLights);
-                break;
-            default:
-                controller = new StandardTrafficLightController(trafficLights);
-                break;
-        }
+        controller = switch (type) {
+            case PRIORITY -> new PriorityTrafficLightController(trafficLights);
+            case OPPOSING -> new OpposingTrafficLightController(trafficLights);
+            default -> new StandardTrafficLightController(trafficLights);
+        };
     }
 }

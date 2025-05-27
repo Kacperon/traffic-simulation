@@ -21,14 +21,6 @@ public abstract class AbstractIntersection {
      * @return The traffic light for that direction
      */
     public abstract TrafficLight getTrafficLight(TrafficLight.Direction direction);
-
-    /**
-     * Gets the current green directions
-     *
-     * @return List of directions that currently have a green light
-     */
-    public abstract List<TrafficLight.Direction> getCurrentGreenDirections();
-
     /**
      * Processes vehicles that can cross the intersection
      *

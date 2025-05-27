@@ -33,7 +33,6 @@ public class Simulation {
         this.completedVehicles = new ArrayList<>();
         this.stepStatuses = new ArrayList<>();
 
-        // Inicjalizacja kolejek pojazdów dla każdego kierunku
         for (TrafficLight.Direction direction : TrafficLight.Direction.values()) {
             vehicleQueues.put(direction, new LinkedList<>());
         }
@@ -97,9 +96,9 @@ public class Simulation {
 
     public void performSimulationStep() {
 
-        StepStatus stepStatus;
+        StepStatus stepStatus = new StepStatus();
         intersection.update(vehicleQueues);
-        stepStatus = moveVehiclesAcrossIntersection();
+        intersection.processVehicles(vehicleQueues, stepStatus, completedVehicles);
         updateWaitingVehicles();
         stepStatuses.add(stepStatus);
 
@@ -108,30 +107,6 @@ public class Simulation {
         }
     }
 
-    // Find the step method or wherever vehicles are moved from queues to crossing
-    private StepStatus moveVehiclesAcrossIntersection() {
-        StepStatus status = new StepStatus();
-
-        // Get all directions that allow crossing (green OR yellow)
-        List<TrafficLight.Direction> crossableDirections = intersection.getCurrentGreenDirections();
-
-        for (TrafficLight.Direction dir : crossableDirections) {
-            Queue<Vehicle> queue = vehicleQueues.get(dir);
-            // Process up to N vehicles per green/yellow light
-            int vehiclesToProcess = Math.min(queue.size(), MAX_VEHICLES_PER_GREEN);
-
-            for (int i = 0; i < vehiclesToProcess; i++) {
-                Vehicle v = queue.poll();
-                if (v != null) {
-                    v.startCrossing();
-                    completedVehicles.add(v);
-                    status.addLeftVehicle(v.getVehicleId());
-                }
-            }
-        }
-
-        return status;
-    }
 
     private void updateWaitingVehicles() {
         for (Queue<Vehicle> queue : vehicleQueues.values()) {
@@ -216,7 +191,7 @@ public class Simulation {
             for (String vehicleId : newCrossedVehicles) {
                 for (Vehicle v : completedVehicles) {
                     if (v.getVehicleId().equals(vehicleId)) {
-                        // Dodaj pojazd do animowanych pojazdów
+
                         currentState.addCrossingVehicle(vehicleId,
                                 v.getStartRoad(),
                                 v.getEndRoad());

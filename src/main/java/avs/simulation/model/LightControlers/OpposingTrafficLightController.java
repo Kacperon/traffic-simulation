@@ -14,10 +14,13 @@ public class OpposingTrafficLightController extends AbstractTrafficLightControll
     private static final int GREEN_DURATION = 4;
     private static final int YELLOW_DURATION = 1;
     private static final int RED_DURATION = 1;
+    private static final int RED_YELLOW_DURATION = 1;
     private static final int MIN_VEHICLES_FOR_PRIORITY = 3;
     
     private TrafficLight.Direction currentGreenDirection;
     private Map<TrafficLight.Direction, Integer> queueLengths;
+    private enum Phase { GREEN, YELLOW, RED, RED_YELLOW }
+    private Phase currentPhase = Phase.GREEN;
     
     public OpposingTrafficLightController(Map<TrafficLight.Direction, TrafficLight> trafficLights) {
         super(trafficLights);
@@ -30,6 +33,7 @@ public class OpposingTrafficLightController extends AbstractTrafficLightControll
     @Override
     protected void initializeLights() {
         this.currentGreenDirection = TrafficLight.Direction.NORTH;
+        this.currentPhase = Phase.GREEN;
         TrafficLight.Direction opposingDirection = getOpposingDirection(currentGreenDirection);
         
         for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
@@ -52,28 +56,46 @@ public class OpposingTrafficLightController extends AbstractTrafficLightControll
         TrafficLight opposingLight = trafficLights.get(getOpposingDirection(currentGreenDirection));
         
         if (currentLight.isStateFinished()) {
-            if (currentLight.getCurrentState() == TrafficLight.LightState.GREEN) {
-                // Set both current and opposing direction to YELLOW
-                currentLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
-                opposingLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
-            } else if (currentLight.getCurrentState() == TrafficLight.LightState.YELLOW) {
-                // Set both to RED
-                currentLight.setState(TrafficLight.LightState.RED, RED_DURATION);
-                opposingLight.setState(TrafficLight.LightState.RED, RED_DURATION);
-                
-                // Choose next direction based on queue lengths
-                TrafficLight.Direction nextDirection = findPriorityDirection();
-                TrafficLight.Direction opposingNextDirection = getOpposingDirection(nextDirection);
-                
-                // Set both next directions to GREEN
-                trafficLights.get(nextDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
-                trafficLights.get(opposingNextDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
-                
-                currentGreenDirection = nextDirection;
-                
-                // Reset queue length for both directions that just got green
-                queueLengths.put(nextDirection, 0);
-                queueLengths.put(opposingNextDirection, 0);
+            switch (currentPhase) {
+                case GREEN:
+                    // Set both current and opposing direction to YELLOW
+                    currentLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
+                    opposingLight.setState(TrafficLight.LightState.YELLOW, YELLOW_DURATION);
+                    currentPhase = Phase.YELLOW;
+                    break;
+                    
+                case YELLOW:
+                    // Set both to RED
+                    currentLight.setState(TrafficLight.LightState.RED, RED_DURATION);
+                    opposingLight.setState(TrafficLight.LightState.RED, RED_DURATION);
+                    currentPhase = Phase.RED;
+                    break;
+                    
+                case RED:
+                    // Choose next direction based on queue lengths
+                    TrafficLight.Direction nextDirection = findPriorityDirection();
+                    TrafficLight.Direction opposingNextDirection = getOpposingDirection(nextDirection);
+                    
+                    // Set both next directions to RED_YELLOW before GREEN
+                    trafficLights.get(nextDirection).setState(TrafficLight.LightState.RED_YELLOW, RED_YELLOW_DURATION);
+                    trafficLights.get(opposingNextDirection).setState(TrafficLight.LightState.RED_YELLOW, RED_YELLOW_DURATION);
+                    
+                    currentGreenDirection = nextDirection;
+                    currentPhase = Phase.RED_YELLOW;
+                    break;
+                    
+                case RED_YELLOW:
+                    // Now transition to GREEN
+                    TrafficLight.Direction opposingDirection = getOpposingDirection(currentGreenDirection);
+                    trafficLights.get(currentGreenDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
+                    trafficLights.get(opposingDirection).setState(TrafficLight.LightState.GREEN, GREEN_DURATION);
+                    
+                    // Reset queue length for both directions that just got green
+                    queueLengths.put(currentGreenDirection, 0);
+                    queueLengths.put(opposingDirection, 0);
+                    
+                    currentPhase = Phase.GREEN;
+                    break;
             }
         }
     }
@@ -131,5 +153,23 @@ public class OpposingTrafficLightController extends AbstractTrafficLightControll
                 queueLengths.put(dir, queue.size());
             }
         }
+    }
+
+    public boolean canLeftTurn(TrafficLight.Direction fromDirection) {
+        TrafficLight light = trafficLights.get(fromDirection);
+        if (light == null) {
+            return false;
+        }
+        TrafficLight.LightState state = light.getCurrentState();
+        return state == TrafficLight.LightState.YELLOW;
+    }
+
+    public boolean canRightStraightCross(TrafficLight.Direction fromDirection) {
+        TrafficLight light = trafficLights.get(fromDirection);
+        if (light == null) {
+            return false;
+        }
+        TrafficLight.LightState state = light.getCurrentState();
+        return state == TrafficLight.LightState.GREEN;
     }
 }
