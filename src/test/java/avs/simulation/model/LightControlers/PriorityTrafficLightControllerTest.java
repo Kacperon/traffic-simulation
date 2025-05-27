@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PriorityTrafficLightControllerTest {
 
     private Map<TrafficLight.Direction, TrafficLight> lights;
-    private PriorityTrafficLightController controller;
+    private OpposingTrafficLightController controller;
 
     @BeforeEach
     void setUp() {
@@ -19,7 +19,7 @@ class PriorityTrafficLightControllerTest {
         for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
             lights.put(dir, new TrafficLight());
         }
-        controller = new PriorityTrafficLightController(lights);
+        controller = new OpposingTrafficLightController(lights);
         controller.initializeLights();
     }
 
@@ -28,14 +28,15 @@ class PriorityTrafficLightControllerTest {
         assertEquals(TrafficLight.LightState.GREEN,
                 lights.get(TrafficLight.Direction.NORTH).getCurrentState(),
                 "NORTH light should be initially GREEN");
-
-        for (TrafficLight.Direction dir : TrafficLight.Direction.values()) {
-            if (dir != TrafficLight.Direction.NORTH) {
-                assertEquals(TrafficLight.LightState.RED,
-                        lights.get(dir).getCurrentState(),
-                        dir + " light should be RED initially");
-            }
-        }
+        assertEquals(TrafficLight.LightState.GREEN,
+                lights.get(TrafficLight.Direction.SOUTH).getCurrentState(),
+                "SOUTH light should be initially RED");
+        assertEquals(TrafficLight.LightState.RED,
+                lights.get(TrafficLight.Direction.EAST).getCurrentState(),
+                "EAST light should be initially RED");
+        assertEquals(TrafficLight.LightState.RED,
+                lights.get(TrafficLight.Direction.WEST).getCurrentState(),
+                "WEST light should be initially RED");
     }
 
     @Test

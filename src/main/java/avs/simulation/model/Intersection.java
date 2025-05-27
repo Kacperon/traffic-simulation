@@ -10,13 +10,13 @@ public class Intersection extends AbstractIntersection {
     public Intersection() {
         this(ControllerType.STANDARD);
     }
-    
+
     public Intersection(ControllerType controllerType) {
         trafficLights = new HashMap<>();
         for (TrafficLight.Direction direction : TrafficLight.Direction.values()) {
             trafficLights.put(direction, new TrafficLight());
         }
-        
+
         // Create the appropriate controller based on type
         switch (controllerType) {
             case PRIORITY:
@@ -103,8 +103,8 @@ public class Intersection extends AbstractIntersection {
      */
     public void setControllerType(ControllerType type) {
         if ((type == ControllerType.STANDARD && controller instanceof StandardTrafficLightController) ||
-            (type == ControllerType.PRIORITY && controller instanceof PriorityTrafficLightController)) {
-            // Already using this controller type
+            (type == ControllerType.PRIORITY && controller instanceof PriorityTrafficLightController)||
+            (type == ControllerType.OPPOSING && controller instanceof OpposingTrafficLightController)) {
             return;
         }
         
@@ -113,6 +113,11 @@ public class Intersection extends AbstractIntersection {
                 controller = new PriorityTrafficLightController(trafficLights);
                 break;
             case STANDARD:
+                controller = new StandardTrafficLightController(trafficLights);
+                break;
+            case OPPOSING:
+                controller = new OpposingTrafficLightController(trafficLights);
+                break;
             default:
                 controller = new StandardTrafficLightController(trafficLights);
                 break;
