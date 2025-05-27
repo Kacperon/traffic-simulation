@@ -3,9 +3,6 @@ package avs.simulation.model;
 import avs.simulation.UI.utils.DirectionUtils;
 import avs.simulation.model.LightControlers.TrafficLight;
 
-/**
- * Reprezentuje pojazd w symulacji
- */
 public class Vehicle {
     
     private String vehicleId;

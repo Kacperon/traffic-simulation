@@ -1,6 +1,7 @@
 package avs.simulation.model.LightControlers;
 
 public class TrafficLight {
+
     public enum Direction {
         NORTH, EAST, SOUTH, WEST
     }
