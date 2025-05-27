@@ -15,7 +15,6 @@ public class OpposingTrafficLightController extends AbstractTrafficLightControll
     private static final int YELLOW_DURATION = 1;
     private static final int RED_DURATION = 1;
     private static final int RED_YELLOW_DURATION = 1;
-    private static final int MIN_VEHICLES_FOR_PRIORITY = 3;
     
     private TrafficLight.Direction currentGreenDirection;
     private Map<TrafficLight.Direction, Integer> queueLengths;
@@ -113,28 +112,8 @@ public class OpposingTrafficLightController extends AbstractTrafficLightControll
     }
     
     private TrafficLight.Direction findPriorityDirection() {
-        // Only consider NORTH and EAST as the primary directions
-        TrafficLight.Direction[] primaryDirections = {TrafficLight.Direction.NORTH, TrafficLight.Direction.EAST};
-        
-        // Get current primary axis (NORTH/SOUTH or EAST/WEST)
         boolean isNorthSouthCurrent = (currentGreenDirection == TrafficLight.Direction.NORTH || 
                                       currentGreenDirection == TrafficLight.Direction.SOUTH);
-        
-        // The candidate is the opposite axis
-        TrafficLight.Direction candidateDir = isNorthSouthCurrent ? 
-                                             TrafficLight.Direction.EAST : 
-                                             TrafficLight.Direction.NORTH;
-        
-        // Sum queue lengths for both directions on the candidate axis
-        int candidateSum = queueLengths.get(candidateDir) + 
-                          queueLengths.get(getOpposingDirection(candidateDir));
-        
-        // Only switch if queue length exceeds threshold
-        if (candidateSum >= MIN_VEHICLES_FOR_PRIORITY) {
-            return candidateDir;
-        }
-        
-        // Otherwise toggle between NORTH and EAST
         return isNorthSouthCurrent ? TrafficLight.Direction.EAST : TrafficLight.Direction.NORTH;
     }
     
