@@ -48,12 +48,12 @@ public class Main {
         
         // If we get here, show usage info
         System.out.println("Usage:");
-        System.out.println("  java -jar simulation.jar vis");
-        System.out.println("  java -jar simulation.jar <inputFile.json> <outputFile.json> [controllerType]");
+        System.out.println("  java -jar TrafficSimulation-1.0.jar vis");
+        System.out.println("  java -jar TrafficSimulation-1.0.jar <inputFile.json> <outputFile.json> [controllerType]");
         System.out.println("Examples:");
-        System.out.println("  java -jar simulation.jar vis");
-        System.out.println("  java -jar simulation.jar input.json output.json");
-        System.out.println("  java -jar simulation.jar input.json output.json opposing");
+        System.out.println("  java -jar TrafficSimulation-1.0.jar vis");
+        System.out.println("  java -jar TrafficSimulation-1.0.jar input.json output.json");
+        System.out.println("  java -jar TrafficSimulation-1.0.jar input.json output.json opposing");
         System.out.println("\nValid controller types: standard, priority, opposing");
     }
     

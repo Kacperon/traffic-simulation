@@ -1,11 +1,12 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'com.gradleup.shadow' version '8.3.6'
 }
 
 javafx {
-    version = '17.0.2'
+    version = '21.0.5'
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
@@ -17,8 +18,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.openjfx:javafx-controls:17.0.2'
-    implementation 'org.openjfx:javafx-fxml:17.0.2'
+    implementation 'org.openjfx:javafx-controls:21.0.5'
+    implementation 'org.openjfx:javafx-fxml:21.0.5'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.0'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -26,4 +27,23 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+application {
+    getMainClass().set('avs.simulation.Main')
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+shadowJar {
+    archiveBaseName.set('TrafficSimulation')
+    archiveVersion.set('1.0')
+    archiveClassifier.set('')
+    manifest {
+        attributes 'Main-Class': 'avs.simulation.Main'
+    }
 }
