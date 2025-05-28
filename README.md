@@ -25,7 +25,7 @@ The application can be run in two modes:
 ### Visualization Mode
 
 ```
-java -jar simulation.jar vis
+java -jar TrafficSimulation-1.0.jar vis
 ```
 
 Launches the graphical simulation visualizer where you can observe traffic flow in real-time.
@@ -33,7 +33,7 @@ Launches the graphical simulation visualizer where you can observe traffic flow 
 ### File Processing Mode
 
 ```
-java -jar simulation.jar <inputFile.json> <outputFile.json> [controllerType]
+java -jar TrafficSimulation-1.0.jar <inputFile.json> <outputFile.json> [controllerType]
 ```
 
 Process a simulation based on JSON input and generate results to an output file.
@@ -49,9 +49,9 @@ Process a simulation based on JSON input and generate results to an output file.
 ### Examples:
 
 ```
-java -jar simulation.jar vis
-java -jar simulation.jar input.json output.json
-java -jar simulation.jar input.json output.json opposing
+java -jar TrafficSimulation-1.0.jar vis
+java -jar TrafficSimulation-1.0.jar input.json output.json
+java -jar TrafficSimulation-1.0.jar input.json output.json opposing
 ```
 
 ## Input File Format
