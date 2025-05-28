@@ -5,9 +5,10 @@ plugins {
     id 'com.gradleup.shadow' version '8.3.6'
 }
 
-javafx {
-    version = '21.0.5'
-    modules = ['javafx.controls', 'javafx.fxml']
+ext {
+    javafxVersion = '21.0.5'
+    javafxModules = ['base', 'controls', 'fxml', 'graphics']
+    platforms = ['win', 'linux', 'mac']
 }
 
 group = 'avs.simulation'
@@ -18,11 +19,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.openjfx:javafx-controls:21.0.5'
-    implementation 'org.openjfx:javafx-fxml:21.0.5'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.0'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    javafxModules.each { module ->
+        platforms.each { platform ->
+            implementation "org.openjfx:javafx-${module}:${javafxVersion}:${platform}"
+        }
+    }
 }
 
 test {
@@ -30,7 +35,7 @@ test {
 }
 
 application {
-    getMainClass().set('avs.simulation.Main')
+    getMainClass().set('avs.simulation.Launcher')
 }
 
 java {
@@ -44,6 +49,6 @@ shadowJar {
     archiveVersion.set('1.0')
     archiveClassifier.set('')
     manifest {
-        attributes 'Main-Class': 'avs.simulation.Main'
+        attributes 'Main-Class': 'avs.simulation.Launcher'
     }
 }
